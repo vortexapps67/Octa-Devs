@@ -1,0 +1,19 @@
+{
+  "name": "octa-devs-website",
+  "version": "1.0.0",
+  "description": "Octa Devs — App Development Agency Website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "octa-devs",
+    "app-development",
+    "agency",
+    "framer",
+    "portfolio"
+  ],
+  "author": "Octa Devs",
+  "license": "ISC"
+}
