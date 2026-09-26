@@ -629,37 +629,22 @@
         }
       }
 
-      // B) In /Connect links column: Append Discord, GitHub, Privacy, Terms, and Admin Portal
+      // B) In /Connect links column: only add Discord, GitHub, and Support Us
       const mailLink = document.querySelector('footer a[href^="mailto:"]') || document.querySelector('a[href^="mailto:"]');
       if (mailLink && !document.getElementById('octa-footer-socials-col')) {
         const linkWrapper = document.createElement('div');
         linkWrapper.id = 'octa-footer-socials-col';
         linkWrapper.className = 'octa-footer-socials-col';
         linkWrapper.innerHTML = `
-          <a class="octa-footer-social-link" href="${DISCORD_URL}" target="_blank" rel="noopener" title="Octa Devs Discord Community">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            <span>Discord Community ↗</span>
+          <a class="octa-footer-social-link" href="${DISCORD_URL}" target="_blank" rel="noopener" title="Discord">
+            <span>Discord ↗</span>
           </a>
-          <a class="octa-footer-social-link" href="${GITHUB_URL}" target="_blank" rel="noopener" title="Octa Devs GitHub Organization">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-            <span>github.com/octa-devs ↗</span>
+          <a class="octa-footer-social-link" href="${GITHUB_URL}" target="_blank" rel="noopener" title="GitHub">
+            <span>GitHub ↗</span>
           </a>
-          <button type="button" class="octa-footer-social-link octa-cookie-chip" onclick="window.openOctaSupportModal ? window.openOctaSupportModal() : null" title="Support Octa Devs via UPI">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-            <span style="color: #eb4d6d;">💖 Support Us (UPI) ↗</span>
+          <button type="button" class="octa-footer-social-link octa-cookie-chip" onclick="window.openOctaSupportModal ? window.openOctaSupportModal() : null" title="Support Us" style="padding:0;margin:0;border:none;background:none;">
+            <span style="color:#eb4d6d;">💖 Support ↗</span>
           </button>
-          <a class="octa-footer-social-link" href="/privacy.html" title="Octa Devs Privacy Policy">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span>Privacy Policy ↗</span>
-          </a>
-          <a class="octa-footer-social-link" href="/terms.html" title="Octa Devs Terms of Service">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            <span>Terms of Service ↗</span>
-          </a>
-          <a class="octa-footer-admin-portal-link" href="/admin" title="Open Octa Devs Admin Panel">
-            <span class="octa-admin-pulse-dot"></span>
-            <span>Admin Portal ↗</span>
-          </a>
         `;
         const targetContainer = mailLink.closest('.framer-dd8dt3') || mailLink.closest('.framer-1ac7wjl') || mailLink.parentNode.parentNode || mailLink.parentNode;
         targetContainer.appendChild(linkWrapper);
@@ -673,47 +658,28 @@
         bar.innerHTML = `
           <div class="octa-footer-bar-inner">
             <div class="octa-footer-bar-left">
+              <img src="/Make_In_India.png" alt="Make in India" class="octa-mii-footer-img" />
+              <span class="octa-footer-bar-sep">·</span>
               <span class="octa-footer-bar-logo">OCTA DEVS</span>
               <span class="octa-footer-bar-sep">·</span>
-              <span class="octa-footer-bar-text">App Development Studio © 2026</span>
+              <span class="octa-footer-bar-text">© 2026</span>
             </div>
             <div class="octa-footer-bar-center">
-              <a href="${GITHUB_URL}" target="_blank" rel="noopener" class="octa-footer-chip-link" title="Octa Devs GitHub Organization">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-                <span>github.com/octa-devs</span>
-              </a>
-              <a href="${DISCORD_URL}" target="_blank" rel="noopener" class="octa-footer-chip-link" title="Octa Devs Discord Server">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <span>Discord</span>
-              </a>
-              <a href="mailto:${CONTACT_EMAIL}" class="octa-footer-chip-link" title="Email ${CONTACT_EMAIL}">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                <span>${CONTACT_EMAIL}</span>
-              </a>
+              <a href="${GITHUB_URL}" target="_blank" rel="noopener" class="octa-footer-chip-link">GitHub</a>
+              <a href="${DISCORD_URL}" target="_blank" rel="noopener" class="octa-footer-chip-link">Discord</a>
+              <a href="mailto:${CONTACT_EMAIL}" class="octa-footer-chip-link">${CONTACT_EMAIL}</a>
               <span class="octa-footer-bar-sep">·</span>
-              <button type="button" class="octa-footer-chip-link octa-cookie-chip octa-footer-mii-link" onclick="window.openOctaSupportModal ? window.openOctaSupportModal() : null" title="Made in India">
-                <img src="/Make_In_India.png" alt="Make in India" class="octa-mii-footer-img" />
-                <span>Made in India 🇮🇳</span>
-              </button>
-              <a href="/privacy.html" class="octa-footer-chip-link" title="Privacy Policy">
-                <span>Privacy</span>
-              </a>
-              <a href="/terms.html" class="octa-footer-chip-link" title="Terms of Service">
-                <span>Terms</span>
-              </a>
-              <button type="button" class="octa-footer-chip-link octa-cookie-chip" onclick="window.openOctaCookiePreferences ? window.openOctaCookiePreferences() : null" title="Manage Cookie Preferences">
-                <span>Cookies 🍪</span>
-              </button>
+              <a href="/privacy.html" class="octa-footer-chip-link">Privacy</a>
+              <a href="/terms.html" class="octa-footer-chip-link">Terms</a>
+              <button type="button" class="octa-footer-chip-link octa-cookie-chip" onclick="window.openOctaCookiePreferences ? window.openOctaCookiePreferences() : null" title="Cookies">🍪</button>
             </div>
             <div class="octa-footer-bar-right">
-              <a href="/admin" class="octa-footer-admin-pill" title="Admin Control Center">
+              <button type="button" class="octa-footer-support-pill" onclick="window.openOctaSupportModal ? window.openOctaSupportModal() : null" title="Support Octa Devs">
+                <span>💖 Support</span>
+              </button>
+              <a href="/admin" class="octa-footer-admin-pill" title="Admin">
                 <span class="octa-admin-pulse-dot"></span>
-                <span>Admin Panel</span>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                  <polyline points="15 3 21 3 21 9"></polyline>
-                  <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
+                <span>Admin</span>
               </a>
             </div>
           </div>
@@ -739,69 +705,12 @@
     }
   }
 
-  // 6. ================= HEADER SHORTCUTS (GITHUB & DISCORD & SUPPORT US) =================
-  function initHeaderShortcuts() {
-    function mountHeaderLinks() {
-      if (document.getElementById('octa-header-socials')) return true;
+  // 6. ================= HEADER SHORTCUTS =================
+  // Removed: injecting chips into Framer nav breaks layout.
+  // All links accessible from footer bottom bar.
+  function initHeaderShortcuts() {}
 
-      // Look for top navigation bar or menu
-      const navWrap = document.querySelector('[data-framer-name="Navigation Bar"], nav, header, [class*="framer-"][style*="position: fixed"], [class*="framer-"][style*="position:fixed"], .framer-1m3j43o, .framer-mosn3z');
 
-      const headerLinks = document.createElement('div');
-      headerLinks.id = 'octa-header-socials';
-      headerLinks.className = 'octa-header-socials-wrap';
-      headerLinks.innerHTML = `
-        <button type="button" class="octa-nav-chip octa-nav-chip-support" onclick="window.openOctaSupportModal ? window.openOctaSupportModal() : null" title="Support Octa Devs via UPI">
-          <span>💖 Support Us</span>
-        </button>
-        <a href="${GITHUB_URL}" target="_blank" rel="noopener" class="octa-nav-chip" title="GitHub: octa-devs">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-          <span>GitHub</span>
-        </a>
-        <a href="${DISCORD_URL}" target="_blank" rel="noopener" class="octa-nav-chip octa-nav-chip-discord" title="Join Discord">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-          <span>Discord</span>
-        </a>
-        <a href="/privacy.html" class="octa-nav-chip" title="Privacy Policy">
-          <span>Privacy</span>
-        </a>
-        <a href="/terms.html" class="octa-nav-chip" title="Terms of Service">
-          <span>Terms</span>
-        </a>
-      `;
-
-      if (navWrap) {
-        const navContainer = navWrap.querySelector('.framer-1m3j43o, .framer-mosn3z') || navWrap;
-        navContainer.appendChild(headerLinks);
-        return true;
-      } else {
-        // Fallback: floating top-right fixed header capsule
-        headerLinks.style.position = 'fixed';
-        headerLinks.style.top = '16px';
-        headerLinks.style.right = '20px';
-        headerLinks.style.zIndex = '99990';
-        headerLinks.style.background = 'rgba(13, 13, 16, 0.88)';
-        headerLinks.style.backdropFilter = 'blur(12px)';
-        headerLinks.style.webkitBackdropFilter = 'blur(12px)';
-        headerLinks.style.padding = '6px 12px';
-        headerLinks.style.borderRadius = '9999px';
-        headerLinks.style.border = '1px solid rgba(255, 255, 255, 0.12)';
-        headerLinks.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
-        document.body.appendChild(headerLinks);
-        return true;
-      }
-    }
-
-    if (!mountHeaderLinks()) {
-      let attempts = 0;
-      const interval = setInterval(() => {
-        attempts++;
-        if (mountHeaderLinks() || attempts > 30) {
-          clearInterval(interval);
-        }
-      }, 150);
-    }
-  }
 
   // 7. ================= COOKIE CONSENT BANNER & MODAL =================
   function initCookieConsent() {
@@ -2096,6 +2005,33 @@
       color: #ffffff;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(235, 77, 109, 0.35);
+    }
+    .octa-footer-support-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(235, 77, 109, 0.12);
+      border: 1px solid rgba(235, 77, 109, 0.3);
+      border-radius: 9999px;
+      padding: 7px 16px;
+      color: #eb4d6d;
+      font-family: "Archivo", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .octa-footer-support-pill:hover {
+      background: #eb4d6d;
+      border-color: #eb4d6d;
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(235, 77, 109, 0.35);
+    }
+    .octa-footer-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .octa-admin-pulse-dot {
       width: 6px;
