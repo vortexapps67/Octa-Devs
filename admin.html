@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Studio · Octa Devs</title>
+  <link rel="icon" href="/octa_favicon.jpg" type="image/jpeg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Website Design System */
+      --bg-cream: #FAF7F3;
+      --bg-cream-card: #FFFFFF;
+      --pill-dark: #111111;
+      --pill-dark-hover: #1c1c1f;
+      --text-dark: #111111;
+      --text-dark-muted: rgba(17, 17, 17, 0.65);
+      --text-dark-dim: rgba(17, 17, 17, 0.4);
+      --text-light: #FAF7F3;
+      --text-light-muted: rgba(250, 247, 243, 0.7);
+      --border-dark-subtle: rgba(17, 17, 17, 0.08);
+      --border-dark-strong: rgba(17, 17, 17, 0.16);
+      --border-light-subtle: rgba(255, 255, 255, 0.08);
+      --border-light-strong: rgba(255, 255, 255, 0.16);
+      --coral: #eb4d6d;
+      --green: #10b981;
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 28px;
+      --radius-full: 9999px;
+      --font-heading: 'Archivo', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-cream);
+      color: var(--text-dark);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      background-image: 
+        radial-gradient(ellipse at 50% -10%, rgba(235, 77, 109, 0.05) 0%, transparent 60%),
+        radial-gradient(ellipse at 85% 100%, rgba(17, 17, 17, 0.03) 0%, transparent 50%);
+    }
+
+    h1, h2, h3, h4, h5 {
+      font-family: var(--font-heading);
+      letter-spacing: -0.025em;
+    }
+
+    .section-label {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--coral);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    /* Floating Header Capsule */
+    header.header-capsule {
+      max-width: 1200px;
+      width: calc(100% - 48px);
+      margin: 24px auto 0 auto;
+      background: var(--pill-dark);
+      border: 1px solid var(--border-light-subtle);
+      border-radius: var(--radius-full);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+      position: sticky;
+      top: 20px;
+      z-index: 100;
+      color: var(--text-light);
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #1a1a1e;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: block;
+    }
+
+    .brand-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-light);
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--coral);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-pill-btn {
+      background: none;
+      border: none;
+      color: var(--text-light-muted);
+      font-family: var(--font-heading);
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-pill-btn:hover {
+      color: var(--text-light);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-pill-btn.active {
+      color: #111111;
+      background: var(--text-light);
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--font-heading);
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      padding: 9px 20px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-coral {
+      background: var(--coral);
+      color: #ffffff;
+    }
+
+    .btn-coral:hover {
+      background: #ff5e7e;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(235, 77, 109, 0.35);
+    }
+
+    .btn-light {
+      background: var(--bg-cream-card);
+      color: var(--text-dark);
+      border: 1px solid var(--border-dark-subtle);
+    }
+
+    .btn-light:hover {
+      background: #ffffff;
+      border-color: var(--border-dark-strong);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger-pill {
+      background: rgba(235, 77, 109, 0.12);
+      color: var(--coral);
+      border: 1px solid rgba(235, 77, 109, 0.28);
+    }
+
+    .btn-danger-pill:hover {
+      background: var(--coral);
+      color: #ffffff;
+    }
+
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+    }
+
+    /* Beacon Badge */
+    .beacon-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .beacon-badge.dark {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-light);
+    }
+
+    .beacon-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .beacon-dot.coral {
+      background: var(--coral);
+      box-shadow: 0 0 8px var(--coral);
+      animation: pulseCoral 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseCoral {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.85); }
+    }
+
+    /* Auth Screen */
+    #auth-view {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    .auth-card {
+      background: var(--pill-dark);
+      border: 1px solid var(--border-light-subtle);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      text-align: center;
+      color: var(--text-light);
+      position: relative;
+    }
+
+    .auth-logo-badge {
+      width: 76px;
+      height: 76px;
+      border-radius: 22px;
+      background: #18181c;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      margin: 0 auto 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+    }
+
+    .auth-logo-badge img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .auth-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-light);
+    }
+
+    .auth-desc {
+      color: var(--text-light-muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-family: var(--font-heading);
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      margin-bottom: 8px;
+      color: var(--text-dark-muted);
+    }
+
+    .dark-form .form-label {
+      color: var(--text-light-muted);
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid var(--border-dark-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-dark);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 12px 16px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .dark-form .form-input, .dark-form .form-textarea, .dark-form .form-select {
+      background: #18181c;
+      border-color: rgba(255, 255, 255, 0.1);
+      color: var(--text-light);
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 3px rgba(235, 77, 109, 0.15);
+    }
+
+    .error-box {
+      background: rgba(235, 77, 109, 0.15);
+      border: 1px solid rgba(235, 77, 109, 0.3);
+      color: #ff7593;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      margin-bottom: 18px;
+      display: none;
+    }
+
+    /* Main Container */
+    #dashboard-view {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .main-body {
+      max-width: 1200px;
+      width: calc(100% - 48px);
+      margin: 32px auto 60px auto;
+      flex: 1;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: tabFadeIn 0.25s ease;
+    }
+
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .view-hero {
+      margin-bottom: 32px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .view-title {
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.03em;
+    }
+
+    .view-sub {
+      color: var(--text-dark-muted);
+      font-size: 15px;
+      max-width: 600px;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    /* Cards */
+    .cream-card {
+      background: var(--bg-cream-card);
+      border: 1px solid var(--border-dark-subtle);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+      margin-bottom: 24px;
+    }
+
+    /* Countdown Showcase Card */
+    .countdown-showcase {
+      text-align: center;
+      padding: 40px 24px;
+      background: #111111;
+      border-radius: var(--radius-lg);
+      color: #faf7f3;
+      margin-bottom: 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    .countdown-timer-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 28px 0;
+      flex-wrap: wrap;
+    }
+
+    .timer-tile {
+      background: #1c1c20;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-md);
+      padding: 16px 22px;
+      min-width: 90px;
+    }
+
+    .timer-digit {
+      font-family: var(--font-heading);
+      font-size: 40px;
+      font-weight: 700;
+      line-height: 1;
+      color: #faf7f3;
+    }
+
+    .timer-unit {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(250, 247, 243, 0.5);
+      margin-top: 6px;
+    }
+
+    .timer-colon {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--coral);
+    }
+
+    /* Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    /* Card Items */
+    .member-item-card {
+      background: var(--pill-dark);
+      border: 1px solid var(--border-light-subtle);
+      border-radius: 22px;
+      padding: 24px;
+      color: var(--text-light);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .member-item-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+    }
+
+    .member-avatar-wrap {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+      background: #222226;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--coral);
+      flex-shrink: 0;
+    }
+
+    .project-card-image {
+      width: 100%;
+      height: 180px;
+      border-radius: 14px;
+      object-fit: cover;
+      background: #1c1c20;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: block;
+    }
+
+    .member-name {
+      font-family: var(--font-heading);
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text-light);
+    }
+
+    .member-role {
+      font-size: 13.5px;
+      color: rgba(250, 247, 243, 0.65);
+      margin-top: 2px;
+    }
+
+    .member-bio-text {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: rgba(250, 247, 243, 0.7);
+      margin: 16px 0;
+      flex: 1;
+    }
+
+    .social-pills-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .social-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-light-muted);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .social-chip.insta {
+      background: rgba(235, 77, 109, 0.15);
+      color: #ff7593;
+      border: 1px solid rgba(235, 77, 109, 0.3);
+      font-weight: 600;
+    }
+
+    .social-chip:hover {
+      background: var(--coral);
+      color: white;
+    }
+
+    .card-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 14px;
+    }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 17, 17, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border: 1px solid var(--border-dark-subtle);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 580px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-header {
+      padding: 22px 28px;
+      border-bottom: 1px solid var(--border-dark-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-body {
+      padding: 28px;
+    }
+
+    .modal-footer {
+      padding: 18px 28px;
+      border-top: 1px solid var(--border-dark-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      background: #faf9f6;
+      border-bottom-left-radius: var(--radius-lg);
+      border-bottom-right-radius: var(--radius-lg);
+    }
+
+    .upload-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .image-preview-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: #eee;
+      border: 1px solid #ccc;
+      display: none;
+    }
+
+    /* Toast */
+    .toast-msg {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--pill-dark);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-full);
+      padding: 12px 24px;
+      color: var(--text-light);
+      font-family: var(--font-heading);
+      font-size: 13.5px;
+      font-weight: 500;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toast-msg.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Switch */
+    .toggle-ui {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-ui input { display: none; }
+
+    .toggle-slider {
+      width: 46px;
+      height: 26px;
+      background: #d4cfc5;
+      border-radius: var(--radius-full);
+      position: relative;
+      transition: background 0.2s ease;
+    }
+
+    .toggle-ui input:checked + .toggle-slider {
+      background: var(--coral);
+    }
+
+    .toggle-knob {
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
+
+    .toggle-ui input:checked + .toggle-slider .toggle-knob {
+      transform: translateX(20px);
+    }
+
+    .code-snippet {
+      background: #111111;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      color: #a5b4fc;
+      font-family: monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      max-height: 320px;
+      overflow-x: auto;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== 1. LOGIN SCREEN ==================== -->
+  <div id="auth-view">
+    <div class="auth-card">
+      <div class="auth-logo-badge">
+        <img src="/octa_favicon.jpg" alt="Octa Devs" onerror="this.src='/octa_devs_logo.png'">
+      </div>
+      <div class="beacon-badge dark" style="margin-bottom: 14px;">
+        <span class="beacon-dot coral"></span>
+        <span>OCTA DEVS / ADMIN ACCESS</span>
+      </div>
+      <h1 class="auth-title">Welcome to Studio</h1>
+      <p class="auth-desc">Authenticate to manage launch countdown, team members, and client portfolio.</p>
+
+      <div id="login-error" class="error-box"></div>
+
+      <form id="login-form" class="dark-form">
+        <div class="form-group">
+          <label class="form-label" for="admin-password">Passcode</label>
+          <input type="password" id="admin-password" class="form-input" placeholder="Enter admin password (admin00)..." required autofocus>
+        </div>
+        <button type="submit" class="btn btn-coral" id="login-btn" style="width: 100%; padding: 13px;">
+          <span>Enter Admin Studio</span> →
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== 2. MAIN DASHBOARD ==================== -->
+  <div id="dashboard-view">
+    <!-- Floating Header Capsule -->
+    <header class="header-capsule">
+      <div class="brand-wrap">
+        <img src="/octa_favicon.jpg" alt="Octa Devs" class="brand-logo-img" onerror="this.src='/octa_devs_logo.png'">
+        <div class="brand-title-wrap">
+          <span class="brand-title">Octa Devs</span>
+          <span class="brand-subtitle">Studio Control</span>
+        </div>
+      </div>
+
+      <nav class="header-nav">
+        <button class="nav-pill-btn active" data-tab="tab-countdown">⏳ Launch Countdown</button>
+        <button class="nav-pill-btn" data-tab="tab-team">👥 Team Members</button>
+        <button class="nav-pill-btn" data-tab="tab-projects">💼 Projects</button>
+        <button class="nav-pill-btn" data-tab="tab-database">⚡ Supabase Database</button>
+      </nav>
+
+      <div class="header-actions">
+        <a href="/" target="_blank" class="btn btn-light btn-sm">View Website ↗</a>
+        <button id="logout-btn" class="btn btn-danger-pill btn-sm">Log Out</button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-body">
+
+      <!-- ==================== TAB: COUNTDOWN ==================== -->
+      <section id="tab-countdown" class="tab-content active">
+        <div class="view-hero">
+          <div>
+            <span class="section-label">/LAUNCH COUNTDOWN · 2026</span>
+            <h2 class="view-title">Launch Countdown</h2>
+            <p class="view-sub">Configure the live countdown timer that appears on the Works page and website header.</p>
+          </div>
+          <div class="beacon-badge" style="background:#ffffff; border:1px solid var(--border-dark-subtle); color:var(--text-dark);">
+            <span class="beacon-dot coral"></span>
+            <span id="countdown-status-indicator">Active & Ticking</span>
+          </div>
+        </div>
+
+        <!-- Live Preview Showcase -->
+        <div class="countdown-showcase">
+          <div class="beacon-badge dark" style="margin-bottom: 12px;">
+            <span class="beacon-dot coral"></span>
+            <span>LIVE PREVIEW ON WORKS PAGE</span>
+          </div>
+          <h3 id="pv-title" style="font-size: 32px; font-weight: 700; margin-bottom: 6px;">Octa Devs Platform Launch</h3>
+          <p id="pv-subtitle" style="font-size: 14.5px; color: rgba(250, 247, 243, 0.7); max-width: 620px; margin: 0 auto; line-height: 1.5;">
+            We are currently designing and building new mobile and web applications.
+          </p>
+
+          <div class="countdown-timer-wrap">
+            <div class="timer-tile">
+              <div class="timer-digit" id="pv-days">00</div>
+              <div class="timer-unit">Days</div>
+            </div>
+            <span class="timer-colon">:</span>
+            <div class="timer-tile">
+              <div class="timer-digit" id="pv-hours">00</div>
+              <div class="timer-unit">Hours</div>
+            </div>
+            <span class="timer-colon">:</span>
+            <div class="timer-tile">
+              <div class="timer-digit" id="pv-mins">00</div>
+              <div class="timer-unit">Minutes</div>
+            </div>
+            <span class="timer-colon">:</span>
+            <div class="timer-tile">
+              <div class="timer-digit" id="pv-secs">00</div>
+              <div class="timer-unit">Seconds</div>
+            </div>
+          </div>
+          <p id="pv-time-str" style="font-size: 13px; color: rgba(250, 247, 243, 0.5);">Target: Loading date...</p>
+        </div>
+
+        <!-- Settings Form -->
+        <div class="cream-card">
+          <h3 style="font-size: 20px; margin-bottom: 20px;">Countdown Settings</h3>
+          <form id="countdown-form">
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="cd-title">Announcement Headline</label>
+                <input type="text" id="cd-title" class="form-input" required placeholder="e.g. Octa Devs Platform Launch">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cd-datetime">Target Launch Date & Time</label>
+                <input type="datetime-local" id="cd-datetime" class="form-input" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="cd-sub">Announcement Description</label>
+              <textarea id="cd-sub" rows="3" class="form-textarea" placeholder="Detail what users should expect..."></textarea>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-dark-subtle);">
+              <label class="toggle-ui">
+                <input type="checkbox" id="cd-toggle-active" checked>
+                <div class="toggle-slider"><div class="toggle-knob"></div></div>
+                <span style="font-family: var(--font-heading); font-size: 14px; font-weight: 600;">Enable Countdown on Website</span>
+              </label>
+
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-light btn-sm" onclick="setCountdownDays(7)">+7 Days</button>
+                <button type="button" class="btn btn-light btn-sm" onclick="setCountdownDays(14)">+14 Days</button>
+                <button type="button" class="btn btn-light btn-sm" onclick="setCountdownDays(30)">+30 Days</button>
+                <button type="submit" class="btn btn-coral" id="save-countdown-btn">Save Countdown</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ==================== TAB: TEAM MEMBERS ==================== -->
+      <section id="tab-team" class="tab-content">
+        <div class="view-hero">
+          <div>
+            <span class="section-label">/OUR STUDIO · TEAM</span>
+            <h2 class="view-title">Team Members</h2>
+            <p class="view-sub">Manage founders, engineers, and designers. Add Instagram IDs, GitHub, and photos.</p>
+          </div>
+          <button class="btn btn-coral" id="open-member-modal-btn">+ Add Team Member</button>
+        </div>
+
+        <div id="team-cards-grid" class="grid-2">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- ==================== TAB: PROJECTS ==================== -->
+      <section id="tab-projects" class="tab-content">
+        <div class="view-hero">
+          <div>
+            <span class="section-label">/SELECTED WORKS · PORTFOLIO</span>
+            <h2 class="view-title">Projects Showcase</h2>
+            <p class="view-sub">Add or edit mobile apps, web applications, and upload cover screenshots.</p>
+          </div>
+          <button class="btn btn-coral" id="open-project-modal-btn">+ Add Project</button>
+        </div>
+
+        <div id="projects-cards-grid" class="grid-3">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- ==================== TAB: DATABASE & DISCORD ==================== -->
+      <section id="tab-database" class="tab-content">
+        <div class="view-hero">
+          <div>
+            <span class="section-label">/INFRASTRUCTURE · BACKEND</span>
+            <h2 class="view-title">Database & Integrations</h2>
+            <p class="view-sub">Supabase cloud database status, schema migration, and Discord webhook integration.</p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-light btn-sm" id="test-discord-btn">Test Discord Webhook</button>
+            <button class="btn btn-coral btn-sm" id="copy-sql-btn">Copy Supabase SQL</button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="cream-card">
+            <h3 style="font-size: 18px; margin-bottom: 12px;">Cloud Connection Status</h3>
+            <div style="display:grid; gap:14px; margin-top:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#faf9f6; border-radius:12px;">
+                <span style="font-weight:600; font-size:14px;">Supabase Cloud API</span>
+                <span id="sb-status-chip" class="beacon-badge" style="background:#e6f9f0; color:#10b981;">Connected</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#faf9f6; border-radius:12px;">
+                <span style="font-weight:600; font-size:14px;">Discord Lead Webhook</span>
+                <span class="beacon-badge" style="background:#e6f9f0; color:#10b981;">Contacxt Bot Active</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#faf9f6; border-radius:12px;">
+                <span style="font-weight:600; font-size:14px;">Local Store Fallback</span>
+                <span class="beacon-badge" style="background:#f3f4f6; color:#4b5563;">Active & Synced</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="cream-card">
+            <h3 style="font-size: 18px; margin-bottom: 8px;">Supabase SQL Editor</h3>
+            <p style="font-size: 13.5px; color: var(--text-dark-muted); margin-bottom: 16px;">
+              Copy this SQL and run it in your Supabase Dashboard to ensure cloud tables are synced:
+            </p>
+            <pre class="code-snippet" id="sql-box">Loading SQL schema...</pre>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== MODAL: TEAM MEMBER ==================== -->
+  <div id="member-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="member-modal-title" style="font-size: 20px; font-weight: 700;">Add Team Member</h3>
+        <button style="background:none; border:none; font-size:24px; cursor:pointer;" onclick="closeMemberModal()">×</button>
+      </div>
+      <form id="member-form">
+        <div class="modal-body">
+          <input type="hidden" id="mem-id">
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="mem-name">Full Name *</label>
+              <input type="text" id="mem-name" class="form-input" required placeholder="e.g. Aarav Sharma">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mem-role">Role / Position *</label>
+              <input type="text" id="mem-role" class="form-input" required placeholder="e.g. Co-Founder & Lead Engineer">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="mem-bio">Bio & Focus</label>
+            <textarea id="mem-bio" rows="3" class="form-textarea" placeholder="Describe focus, technologies, experience..."></textarea>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="mem-insta">📸 Instagram Handle or URL</label>
+              <input type="text" id="mem-insta" class="form-input" placeholder="e.g. @aarav.dev or https://instagram.com/aarav.dev">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mem-order">Display Priority</label>
+              <input type="number" id="mem-order" class="form-input" value="1">
+            </div>
+          </div>
+
+          <!-- Avatar with File Upload & URL -->
+          <div class="form-group">
+            <label class="form-label">Avatar Photo</label>
+            <div class="upload-box">
+              <input type="file" id="mem-file-input" accept="image/*" style="display:none;">
+              <button type="button" class="btn btn-light btn-sm" onclick="document.getElementById('mem-file-input').click()">📁 Choose Photo</button>
+              <input type="text" id="mem-avatar" class="form-input" placeholder="Or paste image URL...">
+              <img id="mem-avatar-preview" class="image-preview-thumb" alt="Preview">
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="form-group">
+              <label class="form-label" for="mem-github">GitHub URL</label>
+              <input type="url" id="mem-github" class="form-input" placeholder="https://github.com/...">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mem-linkedin">LinkedIn URL</label>
+              <input type="url" id="mem-linkedin" class="form-input" placeholder="https://linkedin.com/in/...">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mem-twitter">X / Twitter URL</label>
+              <input type="url" id="mem-twitter" class="form-input" placeholder="https://x.com/...">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" onclick="closeMemberModal()">Cancel</button>
+          <button type="submit" class="btn btn-coral" id="save-member-btn">Save Member</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: PROJECT ==================== -->
+  <div id="project-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="project-modal-title" style="font-size: 20px; font-weight: 700;">Add Project</h3>
+        <button style="background:none; border:none; font-size:24px; cursor:pointer;" onclick="closeProjectModal()">×</button>
+      </div>
+      <form id="project-form">
+        <div class="modal-body">
+          <input type="hidden" id="proj-id">
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="proj-title">Project Title *</label>
+              <input type="text" id="proj-title" class="form-input" required placeholder="e.g. Apex Financial Suite">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="proj-category">Category *</label>
+              <input type="text" id="proj-category" class="form-input" required placeholder="e.g. Mobile App / iOS & Android">
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="proj-status">Publication Status</label>
+              <select id="proj-status" class="form-select">
+                <option value="Published">Published (Live on Works)</option>
+                <option value="Coming Soon" selected>Coming Soon</option>
+                <option value="Draft">Draft</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="proj-order">Display Priority</label>
+              <input type="number" id="proj-order" class="form-input" value="1">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="proj-desc">Description</label>
+            <textarea id="proj-desc" rows="3" class="form-textarea" placeholder="Detail the application, architecture, stack..."></textarea>
+          </div>
+
+          <!-- Cover Image with File Upload & URL -->
+          <div class="form-group">
+            <label class="form-label">Cover Image / Thumbnail</label>
+            <div class="upload-box">
+              <input type="file" id="proj-file-input" accept="image/*" style="display:none;">
+              <button type="button" class="btn btn-light btn-sm" onclick="document.getElementById('proj-file-input').click()">📁 Choose Image</button>
+              <input type="text" id="proj-img" class="form-input" placeholder="Or paste image URL...">
+              <img id="proj-img-preview" class="image-preview-thumb" alt="Preview">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="proj-link">Live App / Website URL</label>
+            <input type="url" id="proj-link" class="form-input" placeholder="https://...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" onclick="closeProjectModal()">Cancel</button>
+          <button type="submit" class="btn btn-coral" id="save-proj-btn">Save Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Element -->
+  <div id="toast" class="toast-msg"></div>
+
+  <!-- ==================== LOGIC SCRIPT ==================== -->
+  <script>
+    let authToken = localStorage.getItem('octa_admin_token') || getCookie('octa_admin_token') || '';
+    let currentTeam = [];
+    let currentProjects = [];
+    let countdownInterval = null;
+    let targetCountdownDate = null;
+
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    }
+
+    function setCookie(name, val) {
+      document.cookie = `${name}=${val}; path=/; max-age=86400; SameSite=Lax`;
+    }
+
+    function clearCookie(name) {
+      document.cookie = `${name}=; path=/; max-age=0`;
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.className = 'toast-msg show';
+      toast.innerHTML = `<span class="beacon-dot ${type === 'error' ? 'coral' : ''}"></span> <span>${escapeHtml(msg)}</span>`;
+      setTimeout(() => {
+        toast.className = 'toast-msg';
+      }, 4000);
+    }
+
+    async function api(path, options = {}) {
+      options.headers = options.headers || {};
+      if (authToken) {
+        options.headers['Authorization'] = `Bearer ${authToken}`;
+      }
+      if (options.body && typeof options.body === 'object') {
+        options.headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(options.body);
+      }
+      const res = await fetch(path, options);
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        logout();
+        throw new Error('Passcode expired or unauthorized.');
+      }
+      if (!res.ok) {
+        throw new Error(data.error || 'Request failed (' + res.status + ')');
+      }
+      return data;
+    }
+
+    // Startup check
+    async function start() {
+      if (!authToken) {
+        showLogin();
+        return;
+      }
+      try {
+        const verify = await api('/api/admin/verify');
+        if (verify.success) {
+          showDashboard();
+        } else {
+          showLogin();
+        }
+      } catch (e) {
+        showLogin();
+      }
+    }
+
+    function showLogin() {
+      document.getElementById('auth-view').style.display = 'flex';
+      document.getElementById('dashboard-view').style.display = 'none';
+      if (countdownInterval) clearInterval(countdownInterval);
+    }
+
+    function showDashboard() {
+      document.getElementById('auth-view').style.display = 'none';
+      document.getElementById('dashboard-view').style.display = 'flex';
+      loadAll();
+    }
+
+    // Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pw = document.getElementById('admin-password').value.trim();
+      const errBox = document.getElementById('login-error');
+      const btn = document.getElementById('login-btn');
+
+      errBox.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw })
+        });
+        const data = await res.json();
+        if (res.ok && data.success && data.token) {
+          authToken = data.token;
+          localStorage.setItem('octa_admin_token', authToken);
+          setCookie('octa_admin_token', authToken);
+          showToast('Authenticated as Admin');
+          showDashboard();
+        } else {
+          throw new Error(data.error || 'Invalid admin passcode');
+        }
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Enter Admin Studio</span> →';
+      }
+    });
+
+    // Logout
+    function logout() {
+      if (authToken) {
+        fetch('/api/admin/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        }).catch(() => {});
+      }
+      authToken = '';
+      localStorage.removeItem('octa_admin_token');
+      clearCookie('octa_admin_token');
+      showLogin();
+    }
+    document.getElementById('logout-btn').addEventListener('click', logout);
+
+    // Tab Navigation
+    document.querySelectorAll('.nav-pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-pill-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        const tabId = btn.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+
+    // Load Data
+    async function loadAll() {
+      loadCountdown();
+      loadTeam();
+      loadProjects();
+      loadDatabaseTab();
+    }
+
+    // --- COUNTDOWN LOGIC ---
+    async function loadCountdown() {
+      try {
+        const res = await api('/api/countdown');
+        if (res.success && res.countdown) {
+          const cd = res.countdown;
+          document.getElementById('cd-title').value = cd.title || '';
+          document.getElementById('cd-sub').value = cd.subtitle || '';
+          document.getElementById('cd-toggle-active').checked = cd.is_active !== false;
+
+          document.getElementById('pv-title').textContent = cd.title || 'Platform Launch';
+          document.getElementById('pv-subtitle').textContent = cd.subtitle || '';
+
+          if (cd.target_date) {
+            targetCountdownDate = new Date(cd.target_date);
+            const localIso = new Date(targetCountdownDate.getTime() - targetCountdownDate.getTimezoneOffset() * 60000)
+              .toISOString().slice(0, 16);
+            document.getElementById('cd-datetime').value = localIso;
+            document.getElementById('pv-time-str').textContent = 'Target: ' + targetCountdownDate.toLocaleString();
+            startCountdown();
+          }
+        }
+      } catch (err) {
+        showToast('Countdown load error: ' + err.message, 'error');
+      }
+    }
+
+    function setCountdownDays(days) {
+      const d = new Date();
+      d.setDate(d.getDate() + days);
+      const localIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      document.getElementById('cd-datetime').value = localIso;
+      targetCountdownDate = d;
+      document.getElementById('pv-time-str').textContent = 'Target: ' + targetCountdownDate.toLocaleString();
+      startCountdown();
+    }
+
+    function startCountdown() {
+      if (countdownInterval) clearInterval(countdownInterval);
+
+      function tick() {
+        if (!targetCountdownDate) return;
+        const diff = targetCountdownDate.getTime() - Date.now();
+
+        if (diff <= 0) {
+          document.getElementById('pv-days').textContent = '00';
+          document.getElementById('pv-hours').textContent = '00';
+          document.getElementById('pv-mins').textContent = '00';
+          document.getElementById('pv-secs').textContent = '00';
+          document.getElementById('countdown-status-indicator').textContent = 'Launch Live Now!';
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById('pv-days').textContent = String(days).padStart(2, '0');
+        document.getElementById('pv-hours').textContent = String(hours).padStart(2, '0');
+        document.getElementById('pv-mins').textContent = String(mins).padStart(2, '0');
+        document.getElementById('pv-secs').textContent = String(secs).padStart(2, '0');
+      }
+
+      tick();
+      countdownInterval = setInterval(tick, 1000);
+    }
+
+    document.getElementById('countdown-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('save-countdown-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const payload = {
+        title: document.getElementById('cd-title').value.trim(),
+        subtitle: document.getElementById('cd-sub').value.trim(),
+        target_date: new Date(document.getElementById('cd-datetime').value).toISOString(),
+        is_active: document.getElementById('cd-toggle-active').checked
+      };
+
+      try {
+        await api('/api/admin/countdown', { method: 'POST', body: payload });
+        showToast('Countdown updated & published!');
+        targetCountdownDate = new Date(payload.target_date);
+        document.getElementById('pv-title').textContent = payload.title;
+        document.getElementById('pv-subtitle').textContent = payload.subtitle;
+        document.getElementById('pv-time-str').textContent = 'Target: ' + targetCountdownDate.toLocaleString();
+        startCountdown();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Countdown';
+      }
+    });
+
+    // --- FILE UPLOADER HELPER ---
+    async function handleFileUpload(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const dataUrl = reader.result;
+            const res = await api('/api/admin/upload', {
+              method: 'POST',
+              body: { image: dataUrl, filename: file.name }
+            });
+            if (res.success && res.url) {
+              resolve(res.url);
+            } else {
+              reject(new Error(res.error || 'Upload failed'));
+            }
+          } catch(e) { reject(e); }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Member file input listener
+    document.getElementById('mem-file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showToast('Uploading avatar photo...');
+      try {
+        const url = await handleFileUpload(file);
+        document.getElementById('mem-avatar').value = url;
+        const prev = document.getElementById('mem-avatar-preview');
+        prev.src = url;
+        prev.style.display = 'block';
+        showToast('Photo uploaded successfully!');
+      } catch(err) {
+        showToast('Upload failed: ' + err.message, 'error');
+      }
+    });
+
+    document.getElementById('mem-avatar').addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      const prev = document.getElementById('mem-avatar-preview');
+      if (val) {
+        prev.src = val;
+        prev.style.display = 'block';
+      } else {
+        prev.style.display = 'none';
+      }
+    });
+
+    // Project file input listener
+    document.getElementById('proj-file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showToast('Uploading cover image...');
+      try {
+        const url = await handleFileUpload(file);
+        document.getElementById('proj-img').value = url;
+        const prev = document.getElementById('proj-img-preview');
+        prev.src = url;
+        prev.style.display = 'block';
+        showToast('Image uploaded successfully!');
+      } catch(err) {
+        showToast('Upload failed: ' + err.message, 'error');
+      }
+    });
+
+    document.getElementById('proj-img').addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      const prev = document.getElementById('proj-img-preview');
+      if (val) {
+        prev.src = val;
+        prev.style.display = 'block';
+      } else {
+        prev.style.display = 'none';
+      }
+    });
+
+    // --- TEAM MEMBERS LOGIC ---
+    async function loadTeam() {
+      const container = document.getElementById('team-cards-grid');
+      container.innerHTML = '<div style="color:var(--text-dark-dim); padding:20px;">Loading team...</div>';
+
+      try {
+        const res = await api('/api/team');
+        currentTeam = res.team || [];
+
+        if (currentTeam.length === 0) {
+          container.innerHTML = '<div style="color:var(--text-dark-muted); padding:20px;">No team members added yet.</div>';
+          return;
+        }
+
+        container.innerHTML = currentTeam.map(m => {
+          const initials = m.name ? m.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'OD';
+          const avatarHtml = m.avatar_url
+            ? `<img src="${m.avatar_url}" class="member-avatar-wrap" alt="${escapeHtml(m.name)}" onerror="this.outerHTML='<div class=\\'member-avatar-wrap\\'>${initials}</div>'">`
+            : `<div class="member-avatar-wrap">${initials}</div>`;
+
+          const socials = m.socials || {};
+          const chips = [];
+          if (socials.instagram) {
+            let handle = socials.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/$/, '');
+            if (!handle.startsWith('@')) handle = '@' + handle;
+            let url = socials.instagram.startsWith('http') ? socials.instagram : 'https://instagram.com/' + handle.replace('@', '');
+            chips.push(`<a href="${url}" target="_blank" class="social-chip insta">📸 ${escapeHtml(handle)}</a>`);
+          }
+          if (socials.github) chips.push(`<a href="${socials.github}" target="_blank" class="social-chip">GitHub ↗</a>`);
+          if (socials.linkedin) chips.push(`<a href="${socials.linkedin}" target="_blank" class="social-chip">LinkedIn ↗</a>`);
+          if (socials.twitter) chips.push(`<a href="${socials.twitter}" target="_blank" class="social-chip">X / Twitter ↗</a>`);
+
+          return `
+            <div class="member-item-card">
+              <div>
+                <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px;">
+                  ${avatarHtml}
+                  <div>
+                    <h4 class="member-name">${escapeHtml(m.name)}</h4>
+                    <p class="member-role">${escapeHtml(m.role || 'Member')}</p>
+                  </div>
+                </div>
+                <p class="member-bio-text">${escapeHtml(m.bio || 'No bio provided.')}</p>
+                <div class="social-pills-row">${chips.join('') || '<span style="font-size:12px; color:rgba(250,247,243,0.4);">No social links attached</span>'}</div>
+              </div>
+              <div class="card-actions-row">
+                <span class="beacon-badge dark">Priority #${m.sort_order || 0}</span>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-light btn-sm" onclick="editMemberById('${m.id}')">Edit</button>
+                  <button class="btn btn-danger-pill btn-sm" onclick="deleteMemberById('${m.id}')">Delete</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div style="color:var(--coral); padding:20px;">Failed to load team: ${err.message}</div>`;
+      }
+    }
+
+    document.getElementById('open-member-modal-btn').addEventListener('click', () => {
+      document.getElementById('member-modal-title').textContent = 'Add Team Member';
+      document.getElementById('member-form').reset();
+      document.getElementById('mem-id').value = '';
+      document.getElementById('mem-avatar-preview').style.display = 'none';
+      document.getElementById('member-modal').classList.add('open');
+    });
+
+    function closeMemberModal() {
+      document.getElementById('member-modal').classList.remove('open');
+    }
+
+    function editMemberById(id) {
+      const m = currentTeam.find(item => String(item.id) === String(id));
+      if (!m) return;
+
+      document.getElementById('member-modal-title').textContent = 'Edit Team Member';
+      document.getElementById('mem-id').value = m.id;
+      document.getElementById('mem-name').value = m.name || '';
+      document.getElementById('mem-role').value = m.role || '';
+      document.getElementById('mem-bio').value = m.bio || '';
+      document.getElementById('mem-avatar').value = m.avatar_url || '';
+      document.getElementById('mem-order').value = m.sort_order || 0;
+
+      const prev = document.getElementById('mem-avatar-preview');
+      if (m.avatar_url) {
+        prev.src = m.avatar_url;
+        prev.style.display = 'block';
+      } else {
+        prev.style.display = 'none';
+      }
+
+      const socials = m.socials || {};
+      document.getElementById('mem-insta').value = socials.instagram || '';
+      document.getElementById('mem-github').value = socials.github || '';
+      document.getElementById('mem-linkedin').value = socials.linkedin || '';
+      document.getElementById('mem-twitter').value = socials.twitter || '';
+
+      document.getElementById('member-modal').classList.add('open');
+    }
+
+    document.getElementById('member-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('save-member-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const id = document.getElementById('mem-id').value;
+      const instaRaw = document.getElementById('mem-insta').value.trim();
+
+      const payload = {
+        name: document.getElementById('mem-name').value.trim(),
+        role: document.getElementById('mem-role').value.trim(),
+        bio: document.getElementById('mem-bio').value.trim(),
+        avatar_url: document.getElementById('mem-avatar').value.trim(),
+        sort_order: parseInt(document.getElementById('mem-order').value || 0, 10),
+        socials: {
+          instagram: instaRaw,
+          github: document.getElementById('mem-github').value.trim(),
+          linkedin: document.getElementById('mem-linkedin').value.trim(),
+          twitter: document.getElementById('mem-twitter').value.trim()
+        }
+      };
+
+      try {
+        if (id) {
+          await api(`/api/admin/team/${encodeURIComponent(id)}`, { method: 'PUT', body: payload });
+          showToast('Team member updated');
+        } else {
+          await api('/api/admin/team', { method: 'POST', body: payload });
+          showToast('Team member added');
+        }
+        closeMemberModal();
+        loadTeam();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Member';
+      }
+    });
+
+    async function deleteMemberById(id) {
+      if (!confirm('Are you sure you want to remove this team member?')) return;
+      try {
+        await api(`/api/admin/team/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        showToast('Member removed');
+        loadTeam();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- PROJECTS LOGIC ---
+    async function loadProjects() {
+      const container = document.getElementById('projects-cards-grid');
+      container.innerHTML = '<div style="color:var(--text-dark-dim); padding:20px;">Loading projects...</div>';
+
+      try {
+        const res = await api('/api/projects');
+        currentProjects = res.projects || [];
+
+        if (currentProjects.length === 0) {
+          container.innerHTML = '<div style="color:var(--text-dark-muted); padding:20px;">No projects created yet. Click "+ Add Project" to publish your first showcase app.</div>';
+          return;
+        }
+
+        container.innerHTML = currentProjects.map(p => {
+          const imgHtml = p.image_url 
+            ? `<img src="${p.image_url}" class="project-card-image" alt="${escapeHtml(p.title)}" onerror="this.style.display='none'">` 
+            : '';
+
+          return `
+            <div class="member-item-card">
+              <div>
+                ${imgHtml}
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span class="beacon-badge dark">${escapeHtml(p.category || 'Mobile App')}</span>
+                  <span class="beacon-badge ${p.status === 'Published' ? '' : 'dark'}" style="${p.status === 'Published' ? 'background:rgba(16,185,129,0.15); color:#34d399;' : ''}">${p.status || 'Draft'}</span>
+                </div>
+                <h4 style="font-size:20px; font-weight:700; margin-bottom:6px; color:#faf7f3;">${escapeHtml(p.title)}</h4>
+                <p style="font-size:13.5px; color:rgba(250,247,243,0.7); line-height:1.5; margin-bottom:16px;">${escapeHtml(p.description || 'No description.')}</p>
+              </div>
+              <div class="card-actions-row">
+                ${p.project_url ? `<a href="${p.project_url}" target="_blank" style="color:var(--coral); font-size:12px; font-weight:600; text-decoration:none;">Open Project ↗</a>` : '<span></span>'}
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-light btn-sm" onclick="editProjectById('${p.id}')">Edit</button>
+                  <button class="btn btn-danger-pill btn-sm" onclick="deleteProjectById('${p.id}')">Delete</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div style="color:var(--coral); padding:20px;">Failed to load projects: ${err.message}</div>`;
+      }
+    }
+
+    document.getElementById('open-project-modal-btn').addEventListener('click', () => {
+      document.getElementById('project-modal-title').textContent = 'Add Project';
+      document.getElementById('project-form').reset();
+      document.getElementById('proj-id').value = '';
+      document.getElementById('proj-img-preview').style.display = 'none';
+      document.getElementById('project-modal').classList.add('open');
+    });
+
+    function closeProjectModal() {
+      document.getElementById('project-modal').classList.remove('open');
+    }
+
+    function editProjectById(id) {
+      const p = currentProjects.find(item => String(item.id) === String(id));
+      if (!p) return;
+
+      document.getElementById('project-modal-title').textContent = 'Edit Project';
+      document.getElementById('proj-id').value = p.id;
+      document.getElementById('proj-title').value = p.title || '';
+      document.getElementById('proj-category').value = p.category || '';
+      document.getElementById('proj-status').value = p.status || 'Coming Soon';
+      document.getElementById('proj-order').value = p.sort_order || 0;
+      document.getElementById('proj-desc').value = p.description || '';
+      document.getElementById('proj-img').value = p.image_url || '';
+      document.getElementById('proj-link').value = p.project_url || '';
+
+      const prev = document.getElementById('proj-img-preview');
+      if (p.image_url) {
+        prev.src = p.image_url;
+        prev.style.display = 'block';
+      } else {
+        prev.style.display = 'none';
+      }
+
+      document.getElementById('project-modal').classList.add('open');
+    }
+
+    document.getElementById('project-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('save-proj-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const id = document.getElementById('proj-id').value;
+      const payload = {
+        title: document.getElementById('proj-title').value.trim(),
+        category: document.getElementById('proj-category').value.trim(),
+        status: document.getElementById('proj-status').value,
+        sort_order: parseInt(document.getElementById('proj-order').value || 0, 10),
+        description: document.getElementById('proj-desc').value.trim(),
+        image_url: document.getElementById('proj-img').value.trim(),
+        project_url: document.getElementById('proj-link').value.trim()
+      };
+
+      try {
+        if (id) {
+          await api(`/api/admin/projects/${encodeURIComponent(id)}`, { method: 'PUT', body: payload });
+          showToast('Project updated');
+        } else {
+          await api('/api/admin/projects', { method: 'POST', body: payload });
+          showToast('Project added');
+        }
+        closeProjectModal();
+        loadProjects();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Project';
+      }
+    });
+
+    async function deleteProjectById(id) {
+      if (!confirm('Are you sure you want to delete this project?')) return;
+      try {
+        await api(`/api/admin/projects/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        showToast('Project deleted');
+        loadProjects();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- DATABASE / DISCORD TAB ---
+    async function loadDatabaseTab() {
+      try {
+        const res = await fetch('/supabase_schema.sql');
+        if (res.ok) {
+          const sql = await res.text();
+          document.getElementById('sql-box').textContent = sql;
+        }
+      } catch (e) {}
+    }
+
+    document.getElementById('copy-sql-btn').addEventListener('click', () => {
+      const sql = document.getElementById('sql-box').textContent;
+      navigator.clipboard.writeText(sql).then(() => {
+        showToast('Supabase SQL copied to clipboard!');
+      });
+    });
+
+    document.getElementById('test-discord-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('test-discord-btn');
+      btn.disabled = true;
+      btn.textContent = 'Testing Discord...';
+      try {
+        const res = await api('/api/contact', {
+          method: 'POST',
+          body: {
+            name: 'Octa Devs Admin',
+            email: 'admin@octadevs.com',
+            project: 'Test ping from Octa Devs Admin Studio. Discord integration is functioning perfectly!'
+          }
+        });
+        if (res.success) {
+          showToast('Discord notification delivered!');
+        }
+      } catch (err) {
+        showToast('Discord error: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Test Discord Webhook';
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Run
+    start();
+  </script>
+</body>
+</html>
