@@ -566,7 +566,43 @@
   // 5. ================= FOOTER SOCIALS & ADMIN PORTAL =================
   function initFooterAdminAccess() {
     function mountFooterElements() {
-      // A) In /Connect links column: Append Discord, GitHub, Privacy, Terms, and Admin Portal
+      // 0) Unclip Framer footer containers so elements are never cropped
+      const footer = document.querySelector('footer');
+      if (footer) {
+        footer.style.height = 'auto';
+        footer.style.overflow = 'visible';
+      }
+      document.querySelectorAll('.framer-1ac7wjl, .framer-dd8dt3, .framer-3drypv, .framer-5sim8l').forEach(el => {
+        el.style.height = 'auto';
+        el.style.maxHeight = 'none';
+        el.style.overflow = 'visible';
+      });
+
+      // A) In /Explore buttons group: Append Privacy & Terms pill buttons next to Contact/Services/Works
+      const exploreTargetLink = document.querySelector('footer a[href*="#contact"]') || document.querySelector('a[href*="#contact"]');
+      if (exploreTargetLink) {
+        const pillGroup = exploreTargetLink.closest('[class*="framer-"]') ? exploreTargetLink.closest('[class*="framer-"]').parentNode : exploreTargetLink.parentNode;
+        if (pillGroup && !document.getElementById('octa-explore-privacy')) {
+          const privPill = document.createElement('a');
+          privPill.id = 'octa-explore-privacy';
+          privPill.className = 'octa-footer-pill-btn';
+          privPill.href = '/privacy.html';
+          privPill.title = 'Octa Devs Privacy Policy';
+          privPill.innerHTML = `<span>Privacy</span>`;
+
+          const termsPill = document.createElement('a');
+          termsPill.id = 'octa-explore-terms';
+          termsPill.className = 'octa-footer-pill-btn';
+          termsPill.href = '/terms.html';
+          termsPill.title = 'Octa Devs Terms of Service';
+          termsPill.innerHTML = `<span>Terms</span>`;
+
+          pillGroup.appendChild(privPill);
+          pillGroup.appendChild(termsPill);
+        }
+      }
+
+      // B) In /Connect links column: Append Discord, GitHub, Privacy, Terms, and Admin Portal
       const mailLink = document.querySelector('footer a[href^="mailto:"]') || document.querySelector('a[href^="mailto:"]');
       if (mailLink && !document.getElementById('octa-footer-socials-col')) {
         const linkWrapper = document.createElement('div');
@@ -594,12 +630,11 @@
             <span>Admin Portal ↗</span>
           </a>
         `;
-        if (mailLink.parentNode) {
-          mailLink.parentNode.appendChild(linkWrapper);
-        }
+        const targetContainer = mailLink.closest('.framer-dd8dt3') || mailLink.closest('.framer-1ac7wjl') || mailLink.parentNode.parentNode || mailLink.parentNode;
+        targetContainer.appendChild(linkWrapper);
       }
 
-      // B) Discrete bottom bar across entire footer attached to body
+      // C) Discrete bottom bar across entire footer attached to footer or body
       if (!document.getElementById('octa-footer-bottom-bar')) {
         const bar = document.createElement('div');
         bar.id = 'octa-footer-bottom-bar';
@@ -648,7 +683,11 @@
             </div>
           </div>
         `;
-        document.body.appendChild(bar);
+        if (footer) {
+          footer.appendChild(bar);
+        } else {
+          document.body.appendChild(bar);
+        }
       }
 
       return !!(document.getElementById('octa-footer-socials-col') || document.getElementById('octa-footer-bottom-bar'));
@@ -1746,6 +1785,29 @@
     .octa-project-btn:hover {
       background: #ffffff;
       transform: translateY(-1px);
+    }
+
+    .octa-footer-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--token-2fcd1089-c4fe-44ec-8e47-1defe3c9bd50, rgb(250, 247, 243));
+      color: rgb(17, 17, 17);
+      border-radius: 8px;
+      padding: 8px 16px;
+      margin: 4px;
+      font-family: "Archivo", "Inter", sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+    .octa-footer-pill-btn:hover {
+      background-color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     /* Footer Socials column inside /Connect */
