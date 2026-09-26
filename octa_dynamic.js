@@ -644,6 +644,10 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
             <span>github.com/octa-devs ↗</span>
           </a>
+          <button type="button" class="octa-footer-social-link octa-cookie-chip" onclick="window.openOctaSupportModal ? window.openOctaSupportModal() : null" title="Support Octa Devs via UPI">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span style="color: #eb4d6d;">💖 Support Us (UPI) ↗</span>
+          </button>
           <a class="octa-footer-social-link" href="/privacy.html" title="Octa Devs Privacy Policy">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             <span>Privacy Policy ↗</span>
@@ -687,6 +691,10 @@
                 <span>${CONTACT_EMAIL}</span>
               </a>
               <span class="octa-footer-bar-sep">·</span>
+              <button type="button" class="octa-footer-chip-link octa-cookie-chip octa-footer-mii-link" onclick="window.openOctaSupportModal ? window.openOctaSupportModal() : null" title="Made in India">
+                <img src="/Make_In_India.png" alt="Make in India" class="octa-mii-footer-img" />
+                <span>Made in India 🇮🇳</span>
+              </button>
               <a href="/privacy.html" class="octa-footer-chip-link" title="Privacy Policy">
                 <span>Privacy</span>
               </a>
@@ -731,7 +739,7 @@
     }
   }
 
-  // 6. ================= HEADER SHORTCUTS (GITHUB & DISCORD) =================
+  // 6. ================= HEADER SHORTCUTS (GITHUB & DISCORD & SUPPORT US) =================
   function initHeaderShortcuts() {
     function mountHeaderLinks() {
       // Look for top navigation bar or menu
@@ -742,6 +750,9 @@
       headerLinks.id = 'octa-header-socials';
       headerLinks.className = 'octa-header-socials-wrap';
       headerLinks.innerHTML = `
+        <button type="button" class="octa-nav-chip octa-nav-chip-support" onclick="window.openOctaSupportModal ? window.openOctaSupportModal() : null" title="Support Octa Devs via UPI">
+          <span>💖 Support Us</span>
+        </button>
         <a href="${GITHUB_URL}" target="_blank" rel="noopener" class="octa-nav-chip" title="GitHub: octa-devs">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
           <span>GitHub</span>
@@ -988,6 +999,94 @@
     if (!saved) {
       setTimeout(showBanner, 800);
     }
+  }
+
+  // 8. ================= SUPPORT US (UPI) MODAL =================
+  function initSupportModal() {
+    window.openOctaSupportModal = function () {
+      let existingModal = document.getElementById('octa-support-modal');
+      if (existingModal) existingModal.remove();
+
+      const modal = document.createElement('div');
+      modal.id = 'octa-support-modal';
+      modal.className = 'octa-cookie-modal-backdrop';
+      modal.innerHTML = `
+        <div class="octa-cookie-modal-card octa-support-card" role="dialog" aria-modal="true" aria-labelledby="octa-support-title">
+          <div class="octa-cookie-modal-header" style="text-align: center;">
+            <div class="octa-support-header-badge">
+              <img src="/Make_In_India.png" alt="Make in India" class="octa-mii-badge-img" />
+              <span class="octa-cookie-subheading">SUPPORT OUR INDIE STUDIO</span>
+            </div>
+            <h3 id="octa-support-title" class="octa-cookie-modal-title" style="margin-top: 10px;">Support Octa Devs 💖</h3>
+            <p class="octa-cookie-modal-desc">
+              We are an indie team building high-performance web applications and digital tools. Your contribution directly powers our open-source development and infrastructure!
+            </p>
+          </div>
+
+          <div class="octa-upi-container">
+            <div class="octa-upi-header">
+              <img src="/upi.png" alt="UPI Logo" class="octa-upi-logo-img" />
+              <span class="octa-upi-tag">Instant UPI Transfer</span>
+            </div>
+            <div class="octa-upi-box">
+              <div class="octa-upi-id-label">Official VPA / UPI ID:</div>
+              <div class="octa-upi-value-row">
+                <code class="octa-upi-code">akshanshsinha67@axl</code>
+                <button type="button" class="octa-upi-copy-btn" onclick="window.copyOctaUpiId()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Copy ID</span>
+                </button>
+              </div>
+            </div>
+            <div class="octa-upi-actions">
+              <a href="upi://pay?pa=akshanshsinha67@axl&pn=Octa%20Devs&cu=INR" class="octa-cookie-btn-pri octa-upi-pay-btn" title="Pay with any UPI app (GPay, PhonePe, Paytm, BHIM)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span>Pay via UPI App ↗</span>
+              </a>
+              <a href="${DISCORD_URL}" target="_blank" rel="noopener" class="octa-cookie-btn-sec" style="display:inline-flex;align-items:center;gap:6px;" title="Join Discord Community">
+                <span>Discord Community ↗</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="octa-support-modal-footer">
+            <div class="octa-mii-footer-row">
+              <img src="/Make_In_India.png" alt="Make in India" class="octa-mii-footer-img" />
+              <span>Proudly Built in India 🇮🇳</span>
+            </div>
+            <button type="button" class="octa-cookie-btn-ghost" id="octa-support-close-btn">Close</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      requestAnimationFrame(() => {
+        modal.classList.add('octa-modal-visible');
+      });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeSupportModal();
+      });
+
+      document.getElementById('octa-support-close-btn').addEventListener('click', closeSupportModal);
+    };
+
+    function closeSupportModal() {
+      const modal = document.getElementById('octa-support-modal');
+      if (modal) {
+        modal.classList.remove('octa-modal-visible');
+        setTimeout(() => modal.remove(), 300);
+      }
+    }
+
+    window.copyOctaUpiId = function () {
+      const upiId = 'akshanshsinha67@axl';
+      navigator.clipboard.writeText(upiId).then(() => {
+        showToast('UPI ID copied to clipboard: akshanshsinha67@axl', 'success');
+      }).catch(() => {
+        showToast('UPI ID: akshanshsinha67@axl', 'success');
+      });
+    };
   }
 
   // Toast Notification UI
@@ -2026,6 +2125,144 @@
       border-color: rgba(88, 101, 242, 0.4);
       color: #ffffff;
     }
+    .octa-nav-chip-support {
+      background: rgba(235, 77, 109, 0.15);
+      border: 1px solid rgba(235, 77, 109, 0.35);
+      color: #eb4d6d;
+      cursor: pointer;
+    }
+    .octa-nav-chip-support:hover {
+      background: #eb4d6d;
+      color: #ffffff;
+      border-color: #eb4d6d;
+      box-shadow: 0 4px 14px rgba(235, 77, 109, 0.35);
+    }
+    .octa-support-card {
+      max-width: 520px;
+    }
+    .octa-support-header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+    }
+    .octa-mii-badge-img {
+      height: 28px;
+      width: auto;
+      object-fit: contain;
+    }
+    .octa-upi-container {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 20px;
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .octa-upi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .octa-upi-logo-img {
+      height: 26px;
+      width: auto;
+      object-fit: contain;
+    }
+    .octa-upi-tag {
+      font-family: "Archivo", sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 3px 10px;
+      border-radius: 9999px;
+      letter-spacing: 0.04em;
+    }
+    .octa-upi-box {
+      background: #09090b;
+      border: 1px dashed rgba(235, 77, 109, 0.35);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .octa-upi-id-label {
+      font-size: 11px;
+      color: rgba(250, 247, 243, 0.55);
+      margin-bottom: 6px;
+      font-family: "Inter", sans-serif;
+    }
+    .octa-upi-value-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .octa-upi-code {
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: #faf7f3;
+      letter-spacing: 0.02em;
+    }
+    .octa-upi-copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(235, 77, 109, 0.15);
+      color: #eb4d6d;
+      border: 1px solid rgba(235, 77, 109, 0.3);
+      border-radius: 9999px;
+      padding: 6px 14px;
+      font-family: "Archivo", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .octa-upi-copy-btn:hover {
+      background: #eb4d6d;
+      color: #ffffff;
+    }
+    .octa-upi-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .octa-upi-pay-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .octa-support-modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .octa-mii-footer-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: rgba(250, 247, 243, 0.6);
+      font-family: "Inter", sans-serif;
+    }
+    .octa-mii-footer-img {
+      height: 22px;
+      width: auto;
+      object-fit: contain;
+    }
+    .octa-footer-mii-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
   `;
 
   function injectStyles() {
@@ -2044,6 +2281,7 @@
     initFooterAdminAccess();
     initHeaderShortcuts();
     initCookieConsent();
+    initSupportModal();
   }
 
   if (document.readyState === 'loading') {

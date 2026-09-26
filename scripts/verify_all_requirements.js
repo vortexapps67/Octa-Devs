@@ -79,7 +79,7 @@ async function runVerification() {
     assert(content.includes('hello@octadevs.fun'), `New email (hello@octadevs.fun) present in ${f}`);
   }
 
-  // 4. Check octa_dynamic.js for dev team positioning and social links
+  // 4. Check octa_dynamic.js for dev team positioning, social links, support modal, UPI & Make in India
   const dynamicJs = fs.readFileSync('octa_dynamic.js', 'utf8');
   assert(dynamicJs.includes('https://discord.gg/6t8GfTSRBN'), 'Discord invite URL configured in octa_dynamic.js');
   assert(dynamicJs.includes('https://github.com/octa-devs'), 'GitHub URL configured in octa_dynamic.js');
@@ -87,6 +87,12 @@ async function runVerification() {
   assert(dynamicJs.includes('octa-team-showcase-section'), 'Team showcase section styled in octa_dynamic.js');
   assert(dynamicJs.includes('octa-insta-chip'), 'Instagram chips with profile links included in team cards');
   assert(dynamicJs.includes('octa-footer-bottom-bar'), 'Footer bottom bar with social links present');
+  assert(dynamicJs.includes('akshanshsinha67@axl'), 'Exact UPI ID akshanshsinha67@axl present in octa_dynamic.js');
+  assert(dynamicJs.includes('openOctaSupportModal'), 'openOctaSupportModal function present in octa_dynamic.js');
+  assert(dynamicJs.includes('Make_In_India.png'), 'Make_In_India.png referenced in octa_dynamic.js');
+  assert(dynamicJs.includes('upi.png'), 'upi.png referenced in octa_dynamic.js');
+  assert(fs.existsSync('Make_In_India.png'), 'Make_In_India.png file exists on disk');
+  assert(fs.existsSync('upi.png'), 'upi.png file exists on disk');
 
   // 5. Test Live HTTP API Endpoints
   console.log('\n--- Testing Live Server Endpoints ---');
