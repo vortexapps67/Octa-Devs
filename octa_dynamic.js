@@ -684,6 +684,12 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
           <span>Discord</span>
         </a>
+        <a href="/privacy.html" class="octa-nav-chip" title="Privacy Policy">
+          <span>Privacy</span>
+        </a>
+        <a href="/terms.html" class="octa-nav-chip" title="Terms of Service">
+          <span>Terms</span>
+        </a>
       `;
 
       // Try placing it nicely in the fixed navigation capsule if possible
