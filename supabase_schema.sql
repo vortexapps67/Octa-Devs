@@ -44,18 +44,20 @@ ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.launch_settings ENABLE ROW LEVEL SECURITY;
 
--- Allow public read access to all users
+-- Allow public full read & write access (enables both serverless Edge functions and direct browser publishable key calls)
 DROP POLICY IF EXISTS "Public read access for team_members" ON public.team_members;
-CREATE POLICY "Public read access for team_members" ON public.team_members FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public full access for team_members" ON public.team_members;
+CREATE POLICY "Public full access for team_members" ON public.team_members FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Public read access for projects" ON public.projects;
-CREATE POLICY "Public read access for projects" ON public.projects FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public full access for projects" ON public.projects;
+CREATE POLICY "Public full access for projects" ON public.projects FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Public read access for launch_settings" ON public.launch_settings;
-CREATE POLICY "Public read access for launch_settings" ON public.launch_settings FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public full access for launch_settings" ON public.launch_settings;
+CREATE POLICY "Public full access for launch_settings" ON public.launch_settings FOR ALL USING (true) WITH CHECK (true);
 
--- Allow service role full access (bypass RLS for server secret key)
--- Note: Supabase service_role keys automatically bypass RLS.
+-- Note: Supabase service_role secret key also automatically bypasses RLS.
 
 -- Seed default initial records if empty
 INSERT INTO public.launch_settings (id, title, subtitle, target_date, is_active)
