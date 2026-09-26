@@ -14,6 +14,9 @@
   const GITHUB_URL = 'https://github.com/octa-devs';
   const DISCORD_URL = 'https://discord.gg/6t8GfTSRBN';
   const CONTACT_EMAIL = 'hello@octadevs.fun';
+  const SUPABASE_URL = 'https://bofgjrslnvtlvikdopxi.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_DclQThQDyYmDcr6ThGmHoQ_s4s9qSI6';
+  const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1553366159435366517/urFQoeoyr_zm_m4RMCmI0QzWXJasEvWQeh1DOi5ew8p4iHc980Ay5MRWUXG_KDCYjqRv';
 
   // 1. ================= CONTACT FORM DISCORD INTEGRATION =================
   function initContactForm() {
@@ -48,30 +51,65 @@
         submitBtn.innerHTML = '<span style="opacity:0.8;">Sending to Octa Devs...</span>';
       }
 
+      let delivered = false;
+
+      // 1. Attempt Node.js backend if active
       try {
         const response = await fetch('/api/contact', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, project })
         });
-        const data = await response.json().catch(() => ({}));
-
-        if (response.ok && data.success) {
-          if (nameInput) nameInput.value = '';
-          if (emailInput) emailInput.value = '';
-          if (projectInput) projectInput.value = '';
-          showToast('Message sent! Our team has received your inquiry on Discord.', 'success');
-        } else {
-          throw new Error(data.error || 'Failed to submit form');
+        const text = await response.text();
+        if (response.ok && text) {
+          const data = JSON.parse(text);
+          if (data.success) delivered = true;
         }
       } catch (err) {
-        console.error('Contact error:', err);
-        showToast(err.message || 'Error submitting message. Please email hello@octadevs.fun', 'error');
-      } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalBtnContent;
+        console.warn('Backend server contact endpoint unavailable, attempting direct Discord webhook:', err);
+      }
+
+      // 2. Direct Discord Webhook Fallback (for static hosting on Cloudflare Pages)
+      if (!delivered) {
+        try {
+          const discordRes = await fetch(DISCORD_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: 'Octa Devs Portal',
+              avatar_url: 'https://octadevs.fun/octa_favicon.jpg',
+              embeds: [{
+                title: '⚡ New Project Inquiry',
+                color: 15420781,
+                fields: [
+                  { name: 'Client Name', value: name, inline: true },
+                  { name: 'Email', value: email, inline: true },
+                  { name: 'Project Details', value: project || 'No description provided.' }
+                ],
+                timestamp: new Date().toISOString()
+              }]
+            })
+          });
+          if (discordRes.ok || discordRes.status === 204) {
+            delivered = true;
+          }
+        } catch (e) {
+          console.error('Direct Discord delivery failed:', e);
         }
+      }
+
+      if (delivered) {
+        if (nameInput) nameInput.value = '';
+        if (emailInput) emailInput.value = '';
+        if (projectInput) projectInput.value = '';
+        showToast('Message sent! Our team has received your inquiry on Discord.', 'success');
+      } else {
+        showToast('Error submitting message. Please email hello@octadevs.fun', 'error');
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnContent;
       }
     }, true);
   }
@@ -81,14 +119,36 @@
 
   async function initLaunchCountdown() {
     try {
-      const res = await fetch('/api/countdown');
-      if (!res.ok) return;
-      const data = await res.json();
-      if (!data.success || !data.countdown || !data.countdown.is_active) return;
+      let countdown = null;
+      try {
+        const res = await fetch('/api/countdown');
+        if (res.ok) {
+          const text = await res.text();
+          if (text) {
+            const data = JSON.parse(text);
+            if (data.success && data.countdown) countdown = data.countdown;
+          }
+        }
+      } catch (e) {}
 
-      const countdown = data.countdown;
+      // Supabase direct REST fallback
+      if (!countdown) {
+        try {
+          const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/launch_settings?select=*&limit=1`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+          });
+          if (sbRes.ok) {
+            const rows = await sbRes.json();
+            if (rows && rows[0]) countdown = rows[0];
+          }
+        } catch (sbErr) {
+          console.warn('Supabase countdown fetch error:', sbErr);
+        }
+      }
+
+      if (!countdown || countdown.is_active === false) return;
+
       const targetDate = new Date(countdown.target_date).getTime();
-
       renderCountdownWidget(countdown, targetDate);
     } catch (e) {
       console.warn('Countdown init error:', e);
@@ -242,12 +302,34 @@
   // 3. ================= DYNAMIC TEAM MEMBERS SHOWCASE =================
   async function initTeamMembers() {
     try {
-      const res = await fetch('/api/team');
-      if (!res.ok) return;
-      const data = await res.json();
-      if (!data.success || !Array.isArray(data.team) || data.team.length === 0) return;
+      let team = null;
+      try {
+        const res = await fetch('/api/team');
+        if (res.ok) {
+          const text = await res.text();
+          if (text) {
+            const data = JSON.parse(text);
+            if (data.success && Array.isArray(data.team) && data.team.length > 0) team = data.team;
+          }
+        }
+      } catch (e) {}
 
-      const team = data.team;
+      // Supabase direct REST fallback
+      if (!team) {
+        try {
+          const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/team_members?select=*&order=sort_order.asc,created_at.asc`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+          });
+          if (sbRes.ok) {
+            const rows = await sbRes.json();
+            if (Array.isArray(rows) && rows.length > 0) team = rows;
+          }
+        } catch (sbErr) {
+          console.warn('Supabase team fetch error:', sbErr);
+        }
+      }
+
+      if (!Array.isArray(team) || team.length === 0) return;
 
       function mountTeam() {
         // Mount exclusively on Home Page down near the bottom (right above Contact section)
@@ -375,12 +457,35 @@
   // 4. ================= DYNAMIC PROJECTS PORTFOLIO =================
   async function initPublishedProjects() {
     try {
-      const res = await fetch('/api/projects');
-      if (!res.ok) return;
-      const data = await res.json();
-      if (!data.success || !Array.isArray(data.projects)) return;
+      let projects = null;
+      try {
+        const res = await fetch('/api/projects');
+        if (res.ok) {
+          const text = await res.text();
+          if (text) {
+            const data = JSON.parse(text);
+            if (data.success && Array.isArray(data.projects)) projects = data.projects;
+          }
+        }
+      } catch (e) {}
 
-      const published = data.projects.filter(p => p.status === 'Published');
+      // Supabase direct REST fallback
+      if (!projects) {
+        try {
+          const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/projects?select=*&order=sort_order.asc,created_at.desc`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+          });
+          if (sbRes.ok) {
+            const rows = await sbRes.json();
+            if (Array.isArray(rows)) projects = rows;
+          }
+        } catch (sbErr) {
+          console.warn('Supabase projects fetch error:', sbErr);
+        }
+      }
+
+      if (!Array.isArray(projects)) return;
+      const published = projects.filter(p => p.status === 'Published');
       if (published.length === 0) return;
 
       const isWorkPage = window.location.pathname.includes('work') || window.location.href.includes('work.html');
