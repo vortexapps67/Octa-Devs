@@ -742,9 +742,10 @@
   // 6. ================= HEADER SHORTCUTS (GITHUB & DISCORD & SUPPORT US) =================
   function initHeaderShortcuts() {
     function mountHeaderLinks() {
+      if (document.getElementById('octa-header-socials')) return true;
+
       // Look for top navigation bar or menu
-      const navWrap = document.querySelector('[data-framer-name="Navigation Bar"], nav, header');
-      if (!navWrap || document.getElementById('octa-header-socials')) return false;
+      const navWrap = document.querySelector('[data-framer-name="Navigation Bar"], nav, header, [class*="framer-"][style*="position: fixed"], [class*="framer-"][style*="position:fixed"], .framer-1m3j43o, .framer-mosn3z');
 
       const headerLinks = document.createElement('div');
       headerLinks.id = 'octa-header-socials';
@@ -769,20 +770,36 @@
         </a>
       `;
 
-      // Try placing it nicely in the fixed navigation capsule if possible
-      const navContainer = navWrap.querySelector('.framer-1m3j43o, .framer-mosn3z') || navWrap;
-      navContainer.appendChild(headerLinks);
-      return true;
+      if (navWrap) {
+        const navContainer = navWrap.querySelector('.framer-1m3j43o, .framer-mosn3z') || navWrap;
+        navContainer.appendChild(headerLinks);
+        return true;
+      } else {
+        // Fallback: floating top-right fixed header capsule
+        headerLinks.style.position = 'fixed';
+        headerLinks.style.top = '16px';
+        headerLinks.style.right = '20px';
+        headerLinks.style.zIndex = '99990';
+        headerLinks.style.background = 'rgba(13, 13, 16, 0.88)';
+        headerLinks.style.backdropFilter = 'blur(12px)';
+        headerLinks.style.webkitBackdropFilter = 'blur(12px)';
+        headerLinks.style.padding = '6px 12px';
+        headerLinks.style.borderRadius = '9999px';
+        headerLinks.style.border = '1px solid rgba(255, 255, 255, 0.12)';
+        headerLinks.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
+        document.body.appendChild(headerLinks);
+        return true;
+      }
     }
 
     if (!mountHeaderLinks()) {
       let attempts = 0;
       const interval = setInterval(() => {
         attempts++;
-        if (mountHeaderLinks() || attempts > 20) {
+        if (mountHeaderLinks() || attempts > 30) {
           clearInterval(interval);
         }
-      }, 200);
+      }, 150);
     }
   }
 
