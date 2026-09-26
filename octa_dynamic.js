@@ -590,15 +590,49 @@
     }
   }
 
+  // ---------- Persistent mounting helper ----------
+  // Framer rehydrates its React tree after DOMContentLoaded and discards any
+  // nodes we injected into it. So instead of mounting once, we keep re-running
+  // the mount function (it is a no-op when the nodes are already present)
+  // for a while and whenever the DOM changes.
+  function persistMount(mountFn, duration = 20000) {
+    const run = () => {
+      try { mountFn(); } catch (e) { console.warn('Octa mount error:', e); }
+    };
+    run();
+
+    const started = Date.now();
+    const timer = setInterval(() => {
+      run();
+      if (Date.now() - started > duration) clearInterval(timer);
+    }, 400);
+
+    let scheduled = false;
+    const observer = new MutationObserver(() => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        run();
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    setTimeout(() => observer.disconnect(), duration);
+  }
+
   // 5. ================= FOOTER SOCIALS & ADMIN PORTAL =================
   function initFooterAdminAccess() {
     function mountFooterElements() {
-      // 0) Unclip Framer footer containers so elements are never cropped
-      const footer = document.querySelector('footer');
-      if (footer) {
-        footer.style.height = 'auto';
-        footer.style.overflow = 'visible';
-      }
+      // 0) Unclip Framer footer containers so elements are never cropped.
+      // NOTE: Framer ships one <footer> per breakpoint and hides the ones that
+      // do not apply, so only a footer with a real width is usable as a mount
+      // point. When none is visible we fall back to document.body.
+      const footers = Array.from(document.querySelectorAll('footer'));
+      footers.forEach(f => {
+        f.style.height = 'auto';
+        f.style.overflow = 'visible';
+      });
+      const footer = footers.find(f => f.getBoundingClientRect().width > 0) || null;
       document.querySelectorAll('.framer-1ac7wjl, .framer-dd8dt3, .framer-3drypv, .framer-5sim8l').forEach(el => {
         el.style.height = 'auto';
         el.style.maxHeight = 'none';
@@ -642,9 +676,6 @@
           <a class="octa-footer-social-link" href="${GITHUB_URL}" target="_blank" rel="noopener" title="GitHub">
             <span>GitHub ↗</span>
           </a>
-          <button type="button" class="octa-footer-social-link octa-cookie-chip" onclick="window.openOctaSupportModal ? window.openOctaSupportModal() : null" title="Support Us" style="padding:0;margin:0;border:none;background:none;">
-            <span style="color:#eb4d6d;">💖 Support ↗</span>
-          </button>
         `;
         const targetContainer = mailLink.closest('.framer-dd8dt3') || mailLink.closest('.framer-1ac7wjl') || mailLink.parentNode.parentNode || mailLink.parentNode;
         targetContainer.appendChild(linkWrapper);
@@ -668,41 +699,34 @@
               <a href="${GITHUB_URL}" target="_blank" rel="noopener" class="octa-footer-chip-link">GitHub</a>
               <a href="${DISCORD_URL}" target="_blank" rel="noopener" class="octa-footer-chip-link">Discord</a>
               <a href="mailto:${CONTACT_EMAIL}" class="octa-footer-chip-link">${CONTACT_EMAIL}</a>
-              <span class="octa-footer-bar-sep">·</span>
-              <a href="/privacy.html" class="octa-footer-chip-link">Privacy</a>
-              <a href="/terms.html" class="octa-footer-chip-link">Terms</a>
-              <button type="button" class="octa-footer-chip-link octa-cookie-chip" onclick="window.openOctaCookiePreferences ? window.openOctaCookiePreferences() : null" title="Cookies">🍪</button>
+              <button type="button" class="octa-footer-chip-link octa-cookie-chip" onclick="window.openOctaCookiePreferences ? window.openOctaCookiePreferences() : null" title="Cookie Preferences">🍪 Cookies</button>
             </div>
             <div class="octa-footer-bar-right">
-              <button type="button" class="octa-footer-support-pill" onclick="window.openOctaSupportModal ? window.openOctaSupportModal() : null" title="Support Octa Devs">
-                <span>💖 Support</span>
-              </button>
-              <a href="/admin" class="octa-footer-admin-pill" title="Admin">
+              <a href="/privacy.html" class="octa-footer-legal-pill" title="Octa Devs Privacy Policy">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>Privacy Policy</span>
+              </a>
+              <a href="/terms.html" class="octa-footer-legal-pill" title="Octa Devs Terms of Service">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M9 13h6M9 17h4"></path></svg>
+                <span>Terms of Service</span>
+              </a>
+              <a href="/admin" class="octa-footer-admin-pill" title="Octa Devs Admin Panel">
                 <span class="octa-admin-pulse-dot"></span>
-                <span>Admin</span>
+                <span>Admin Panel</span>
               </a>
             </div>
           </div>
         `;
-        if (footer) {
-          footer.appendChild(bar);
-        } else {
-          document.body.appendChild(bar);
-        }
+        // Always mount the bar at body level: it is then immune to Framer's
+        // React rehydration and always spans the full page width, regardless
+        // of which breakpoint's footer is active.
+        document.body.appendChild(bar);
       }
 
       return !!(document.getElementById('octa-footer-socials-col') || document.getElementById('octa-footer-bottom-bar'));
     }
 
-    if (!mountFooterElements()) {
-      let attempts = 0;
-      const interval = setInterval(() => {
-        attempts++;
-        if (mountFooterElements() || attempts > 30) {
-          clearInterval(interval);
-        }
-      }, 150);
-    }
+    persistMount(mountFooterElements);
   }
 
   // 6. ================= HEADER SHORTCUTS =================
@@ -1013,6 +1037,65 @@
         showToast('UPI ID: akshanshsinha67@axl', 'success');
       });
     };
+  }
+
+  // 8b. ================= CONTACT SECTION SOCIAL BADGES =================
+  // Appends Discord + GitHub badges next to the existing Instagram icon
+  // in the Framer "Social Media Icons" row on the Let's talk section.
+  function initContactSocialBadges() {
+    function mountBadges() {
+      if (document.getElementById('octa-contact-socials')) return true;
+
+      const instaLink = document.querySelector('a[href*="instagram.com/octadevsofficial"]');
+      if (!instaLink) return false;
+
+      const row = instaLink.closest('[data-framer-name="Social Media Icons"]')
+        || instaLink.parentNode.parentNode
+        || instaLink.parentNode;
+      if (!row) return false;
+
+      const wrap = document.createElement('div');
+      wrap.id = 'octa-contact-socials';
+      wrap.className = 'octa-contact-socials';
+      wrap.innerHTML = `
+        <a class="octa-contact-social-badge octa-badge-discord" href="${DISCORD_URL}" target="_blank" rel="noopener" title="Join the Octa Devs Discord" aria-label="Discord">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.3 4.9A19 19 0 0 0 15.7 3.5l-.3.7a14 14 0 0 1 4 1.3 13.4 13.4 0 0 0-11-.5c-.4.2-.7.3-.9.4a14 14 0 0 1 4-1.3l-.3-.6A19 19 0 0 0 3.7 4.9C1.3 8.5.6 12.1 1 15.6a19 19 0 0 0 5.7 2.9l.7-1a12 12 0 0 1-1.9-.9l.4-.3a13.6 13.6 0 0 0 11.6 0l.4.3c-.6.4-1.2.7-1.9 1l.7.9a19 19 0 0 0 5.7-2.9c.5-4-.7-7.6-2.1-10.6ZM8.6 13.7c-1 0-1.9-.9-1.9-2.1 0-1.1.8-2 1.9-2s1.9 1 1.9 2.1-.8 2-1.9 2Zm6.8 0c-1 0-1.9-.9-1.9-2.1 0-1.1.8-2 1.9-2s1.9 1 1.9 2.1-.8 2-1.9 2Z"></path></svg>
+        </a>
+        <a class="octa-contact-social-badge octa-badge-github" href="${GITHUB_URL}" target="_blank" rel="noopener" title="Octa Devs on GitHub" aria-label="GitHub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 0 0-3.32 20.47c.53.1.72-.23.72-.5v-1.8c-2.92.64-3.54-1.4-3.54-1.4-.48-1.23-1.17-1.56-1.17-1.56-.96-.65.07-.64.07-.64 1.06.08 1.62 1.09 1.62 1.09.94 1.61 2.47 1.15 3.07.88.1-.68.37-1.15.67-1.41-2.33-.27-4.78-1.17-4.78-5.2 0-1.15.41-2.09 1.08-2.83-.11-.27-.47-1.34.1-2.8 0 0 .88-.28 2.888 1.08a9.95 9.95 0 0 1 5.24 0c2-1.36 2.88-1.08 2.88-1.08.58 1.46.21 2.53.11 2.8.67.74 1.08 1.68 1.08 2.83 0 4.04-2.46 4.93-4.8 5.19.38.33.72.97.72 1.96v2.9c0 .28.19.61.73.5A10.5 10.5 0 0 0 12 1.5Z"></path></svg>
+        </a>
+      `;
+
+      row.appendChild(wrap);
+      return true;
+    }
+
+    persistMount(mountBadges);
+  }
+
+  // 9. ================= FLOATING SUPPORT US BUBBLE (bottom-right) =================
+  function initSupportBubble() {
+    if (document.getElementById('octa-support-bubble')) return;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'octa-support-bubble';
+    wrap.className = 'octa-support-bubble';
+    wrap.innerHTML = `
+      <button type="button" class="octa-support-bubble-btn" aria-label="Support Octa Devs" title="Support Octa Devs">
+        <span class="octa-support-bubble-ring" aria-hidden="true"></span>
+        <span class="octa-support-bubble-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-6.7-4.35-9.2-8.2C1 10 2.1 6.3 5.3 5.2 7.4 4.5 9.6 5.3 12 7.6c2.4-2.3 4.6-3.1 6.7-2.4 3.2 1.1 4.3 4.8 2.5 7.6C18.7 16.65 12 21 12 21z"></path></svg>
+        </span>
+        <span class="octa-support-bubble-label">Support Us</span>
+      </button>
+    `;
+    document.body.appendChild(wrap);
+
+    wrap.querySelector('.octa-support-bubble-btn').addEventListener('click', () => {
+      if (window.openOctaSupportModal) window.openOctaSupportModal();
+    });
+
+    requestAnimationFrame(() => wrap.classList.add('octa-bubble-in'));
   }
 
   // Toast Notification UI
@@ -2006,32 +2089,52 @@
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(235, 77, 109, 0.35);
     }
-    .octa-footer-support-pill {
+    .octa-footer-legal-pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(235, 77, 109, 0.12);
-      border: 1px solid rgba(235, 77, 109, 0.3);
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 9999px;
-      padding: 7px 16px;
-      color: #eb4d6d;
+      padding: 7px 15px;
+      color: rgba(250, 247, 243, 0.82);
       font-family: "Archivo", sans-serif;
       font-size: 12px;
       font-weight: 600;
-      cursor: pointer;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+      white-space: nowrap;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .octa-footer-support-pill:hover {
-      background: #eb4d6d;
-      border-color: #eb4d6d;
+    .octa-footer-legal-pill svg {
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+    .octa-footer-legal-pill:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.28);
       color: #ffffff;
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(235, 77, 109, 0.35);
+    }
+    .octa-footer-legal-pill:hover svg {
+      opacity: 1;
     }
     .octa-footer-bar-right {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 860px) {
+      .octa-footer-bar-inner {
+        justify-content: center;
+        text-align: center;
+      }
+      .octa-footer-bar-center,
+      .octa-footer-bar-right {
+        justify-content: center;
+        width: 100%;
+      }
     }
     .octa-admin-pulse-dot {
       width: 6px;
@@ -2216,6 +2319,169 @@
       align-items: center;
       gap: 6px;
     }
+
+    /* ================= CONTACT SECTION SOCIAL BADGES ================= */
+    .octa-contact-socials {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .octa-contact-social-badge {
+      width: 40px;
+      height: 40px;
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.1);
+      color: #111111;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .octa-contact-social-badge svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+    .octa-contact-social-badge:hover {
+      transform: translateY(-3px);
+      color: #ffffff;
+    }
+    .octa-badge-discord:hover {
+      background: #5865f2;
+      box-shadow: 0 8px 20px rgba(88, 101, 242, 0.35);
+    }
+    .octa-badge-github:hover {
+      background: #111111;
+      box-shadow: 0 8px 20px rgba(17, 17, 17, 0.3);
+    }
+    .octa-contact-social-badge:focus-visible {
+      outline: 2px solid #eb4d6d;
+      outline-offset: 3px;
+    }
+
+    /* ================= FLOATING SUPPORT US BUBBLE ================= */
+    .octa-support-bubble {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 999995;
+      opacity: 0;
+      transform: translateY(24px) scale(0.85);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.4s ease;
+      pointer-events: none;
+    }
+    .octa-support-bubble.octa-bubble-in {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    .octa-support-bubble-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      height: 56px;
+      padding: 0 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #f0607e 0%, #eb4d6d 55%, #d13455 100%);
+      color: #ffffff;
+      font-family: "Archivo", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(235, 77, 109, 0.4), 0 2px 8px rgba(0, 0, 0, 0.25);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .octa-support-bubble-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 42px rgba(235, 77, 109, 0.5), 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    .octa-support-bubble-btn:active {
+      transform: translateY(-1px) scale(0.97);
+    }
+    .octa-support-bubble-btn:focus-visible {
+      outline: 2px solid #ffffff;
+      outline-offset: 3px;
+    }
+    .octa-support-bubble-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      animation: octaBubbleHeartBeat 2.4s ease-in-out infinite;
+    }
+    .octa-support-bubble-label {
+      max-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      opacity: 0;
+      transition: max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .octa-support-bubble-btn:hover .octa-support-bubble-label,
+    .octa-support-bubble-btn:focus-visible .octa-support-bubble-label {
+      max-width: 140px;
+      opacity: 1;
+      margin-left: 9px;
+    }
+    .octa-support-bubble-ring {
+      position: absolute;
+      inset: -1px;
+      border-radius: 9999px;
+      border: 2px solid rgba(235, 77, 109, 0.55);
+      animation: octaBubblePulse 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+      pointer-events: none;
+    }
+    @keyframes octaBubblePulse {
+      0%   { transform: scale(1); opacity: 0.7; }
+      70%  { transform: scale(1.35); opacity: 0; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+    @keyframes octaBubbleHeartBeat {
+      0%, 100%   { transform: scale(1); }
+      12%        { transform: scale(1.22); }
+      24%        { transform: scale(1); }
+      36%        { transform: scale(1.16); }
+      48%        { transform: scale(1); }
+    }
+    /* Lift the bubble while the cookie banner is on screen */
+    body:has(#octa-cookie-banner) .octa-support-bubble {
+      bottom: 116px;
+    }
+    /* Keep toasts clear of the bubble */
+    .octa-toast-element {
+      bottom: 96px !important;
+    }
+    @media (max-width: 700px) {
+      .octa-support-bubble {
+        right: 16px;
+        bottom: 18px;
+      }
+      .octa-support-bubble-btn {
+        height: 50px;
+        padding: 0 14px;
+      }
+      body:has(#octa-cookie-banner) .octa-support-bubble {
+        bottom: 190px;
+      }
+    }
+    @media print {
+      .octa-support-bubble { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .octa-support-bubble-ring,
+      .octa-support-bubble-icon {
+        animation: none;
+      }
+      .octa-support-bubble {
+        transition: none;
+      }
+    }
   `;
 
   function injectStyles() {
@@ -2235,6 +2501,8 @@
     initHeaderShortcuts();
     initCookieConsent();
     initSupportModal();
+    initContactSocialBadges();
+    initSupportBubble();
   }
 
   if (document.readyState === 'loading') {
