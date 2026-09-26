@@ -172,8 +172,12 @@
           comingSoonCard.appendChild(cdContainer);
         }
 
-        cdContainer.innerHTML = buildCountdownHtml(countdown.title, countdown.target_date);
-        startCountdownLoop(targetDate);
+        // Rebuild only when the widget is missing, so the running timer is
+        // not reset on every persistMount tick.
+        if (!cdContainer.querySelector('.octa-cd-grid, [class*="octa-cd-"]')) {
+          cdContainer.innerHTML = buildCountdownHtml(countdown.title, countdown.target_date);
+          startCountdownLoop(targetDate);
+        }
         return true;
       } else {
         // Home page: inside Coming Soon Section
@@ -190,21 +194,15 @@
           targetContainer.appendChild(homeCd);
         }
 
-        homeCd.innerHTML = buildCountdownHtml(countdown.title, countdown.target_date);
-        startCountdownLoop(targetDate);
+        if (!homeCd.querySelector('.octa-cd-grid, [class*="octa-cd-"]')) {
+          homeCd.innerHTML = buildCountdownHtml(countdown.title, countdown.target_date);
+          startCountdownLoop(targetDate);
+        }
         return true;
       }
     }
 
-    if (!tryMount()) {
-      let attempts = 0;
-      const interval = setInterval(() => {
-        attempts++;
-        if (tryMount() || attempts > 30) {
-          clearInterval(interval);
-        }
-      }, 150);
-    }
+    persistMount(tryMount);
   }
 
   function buildCountdownHtml(title, targetDateStr) {
@@ -361,6 +359,9 @@
           targetParent.insertBefore(teamSection, insertBeforeNode);
         }
 
+        // Already rendered and intact: don't rebuild on every persistMount tick.
+        if (teamSection.querySelector('.octa-member-card')) return true;
+
         teamSection.innerHTML = `
           <div class="octa-team-inner">
             <div class="octa-team-header-row">
@@ -399,6 +400,23 @@
                   `;
                 }
 
+                // Portfolio / personal site gets its own highlighted pill
+                let portfolioHtml = '';
+                if (socials.portfolio) {
+                  const portfolioUrl = /^https?:\/\//i.test(socials.portfolio)
+                    ? socials.portfolio
+                    : 'https://' + socials.portfolio;
+                  portfolioHtml = `
+                    <a href="${escapeHtml(portfolioUrl)}" target="_blank" rel="noopener" class="octa-portfolio-chip" title="Portfolio: ${escapeHtml(portfolioUrl)}">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="14" rx="2"></rect>
+                        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path>
+                      </svg>
+                      <span>Portfolio ↗</span>
+                    </a>
+                  `;
+                }
+
                 // Other socials
                 const otherLinks = [];
                 if (socials.github) {
@@ -422,6 +440,7 @@
                     </div>
                     ${m.bio ? `<p class="octa-member-bio">${escapeHtml(m.bio)}</p>` : ''}
                     <div class="octa-member-footer">
+                      ${portfolioHtml}
                       ${instaHtml}
                       ${otherLinks.length ? `<div class="octa-social-others">${otherLinks.join(' · ')}</div>` : ''}
                     </div>
@@ -434,15 +453,7 @@
         return true;
       }
 
-      if (!mountTeam()) {
-        let attempts = 0;
-        const interval = setInterval(() => {
-          attempts++;
-          if (mountTeam() || attempts > 30) {
-            clearInterval(interval);
-          }
-        }, 150);
-      }
+      persistMount(mountTeam);
     } catch (e) {
       console.warn('Team fetch error:', e);
     }
@@ -494,6 +505,16 @@
           if (!workContainer) return false;
           targetParent = workContainer;
           insertBeforeNode = null;
+
+          // The Framer section is a single flex row, so an appended child would
+          // be squeezed in beside the hero copy. Let the row wrap and have the
+          // showcase take a full-width line of its own underneath.
+          const parentStyle = getComputedStyle(workContainer);
+          if (parentStyle.display === 'flex' || parentStyle.display === 'inline-flex') {
+            workContainer.style.flexWrap = 'wrap';
+            workContainer.style.height = 'auto';
+            workContainer.style.overflow = 'visible';
+          }
         } else {
           // Home page: Mount between Coming Soon Section and Dev Team Section
           const teamSection = document.getElementById('octa-dynamic-team-section');
@@ -551,43 +572,156 @@
 
         if (displayItems.length === 0) return true;
 
-        projectsWrap.innerHTML = `
-          <div class="octa-projects-header">
-            <span class="octa-section-tag">/SELECTED WORKS · SHOWCASE</span>
-            <h3 class="octa-team-title">${published.length > 0 ? 'Featured Applications & Platforms' : 'Upcoming Products Under Active Engineering'}</h3>
+        // Already rendered and still intact: leave it alone. Re-running the
+        // render would wipe the active filter and restart the card animations
+        // every time persistMount ticks.
+        if (projectsWrap.querySelector('.octa-works-shell')) return true;
+
+        const isLive = published.length > 0;
+
+        // ---- Category filter set (works page only) ----
+        const categories = [];
+        displayItems.forEach(p => {
+          const c = (p.category || 'Other').trim();
+          if (c && categories.indexOf(c) === -1) categories.push(c);
+        });
+
+        const publishedCount = displayItems.filter(p => p.status === 'Published').length;
+        const comingCount = displayItems.length - publishedCount;
+
+        const statsHtml = isWorkPage ? `
+          <div class="octa-works-stats">
+            <div class="octa-works-stat">
+              <span class="octa-works-stat-value">${displayItems.length}</span>
+              <span class="octa-works-stat-label">Total Projects</span>
+            </div>
+            <div class="octa-works-stat">
+              <span class="octa-works-stat-value">${publishedCount}</span>
+              <span class="octa-works-stat-label">Shipped</span>
+            </div>
+            <div class="octa-works-stat">
+              <span class="octa-works-stat-value">${comingCount}</span>
+              <span class="octa-works-stat-label">In Build</span>
+            </div>
+            <div class="octa-works-stat">
+              <span class="octa-works-stat-value">${categories.length}</span>
+              <span class="octa-works-stat-label">Disciplines</span>
+            </div>
           </div>
-          <div class="octa-projects-grid">
-            ${displayItems.map(p => `
-              <div class="octa-project-card">
-                ${p.image_url ? `<img src="${p.image_url}" class="octa-project-thumb" alt="${escapeHtml(p.title)}" onerror="this.style.display='none'">` : ''}
-                <div class="octa-project-content">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div class="octa-project-tag">${escapeHtml(p.category || 'Mobile & Web')}</div>
-                    <span class="octa-project-status-chip ${p.status === 'Published' ? 'published' : 'coming'}">${escapeHtml(p.status || 'Coming Soon')}</span>
-                  </div>
-                  <h4 class="octa-project-name">${escapeHtml(p.title)}</h4>
-                  <p class="octa-project-desc">${escapeHtml(p.description || '')}</p>
-                  ${p.project_url ? `<a href="${p.project_url}" target="_blank" rel="noopener" class="octa-project-btn">Explore Project →</a>` : `<a href="./#contact" class="octa-project-btn">Inquire About Project →</a>`}
-                </div>
-              </div>
+        ` : '';
+
+        const filtersHtml = (isWorkPage && categories.length > 1) ? `
+          <div class="octa-works-filters" role="group" aria-label="Filter projects by category">
+            <button type="button" class="octa-works-filter is-active" data-filter="__all">All Work</button>
+            ${categories.map(c => `
+              <button type="button" class="octa-works-filter" data-filter="${escapeHtml(c)}">${escapeHtml(c)}</button>
             `).join('')}
           </div>
+        ` : '';
+
+        projectsWrap.innerHTML = `
+          <div class="octa-works-shell">
+            <div class="octa-projects-header">
+              <span class="octa-section-tag">/SELECTED WORKS · SHOWCASE</span>
+              <h3 class="octa-works-title">${isLive ? 'Applications &amp; platforms we have shipped' : 'Products under active engineering'}</h3>
+              <p class="octa-works-intro">${isLive
+                ? 'A selection of mobile and web products built by the Octa Devs studio — from first architecture sketch through to release.'
+                : 'Our current build queue. Each of these is in active development and will land on this page as it ships.'}</p>
+            </div>
+
+            ${statsHtml}
+            ${filtersHtml}
+
+            <div class="octa-projects-grid">
+              ${displayItems.map((p, i) => {
+                const status = p.status || 'Coming Soon';
+                const isPublished = status === 'Published';
+                const category = p.category || 'Mobile & Web';
+                const initials = (p.title || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+                const mediaHtml = p.image_url
+                  ? `<img src="${p.image_url}" class="octa-project-thumb" alt="${escapeHtml(p.title)}" loading="lazy" onerror="this.closest('.octa-project-media').classList.add('is-fallback'); this.remove();">`
+                  : '';
+
+                return `
+                <article class="octa-project-card${isPublished ? ' is-published' : ''}" data-category="${escapeHtml(category)}" style="--octa-card-index:${i}">
+                  <div class="octa-project-media${p.image_url ? '' : ' is-fallback'}">
+                    ${mediaHtml}
+                    <span class="octa-project-media-initials" aria-hidden="true">${escapeHtml(initials)}</span>
+                    <span class="octa-project-status-chip ${isPublished ? 'published' : 'coming'}">
+                      <span class="octa-project-status-dot"></span>${escapeHtml(status)}
+                    </span>
+                  </div>
+
+                  <div class="octa-project-content">
+                    <div class="octa-project-tag">${escapeHtml(category)}</div>
+                    <h4 class="octa-project-name">${escapeHtml(p.title)}</h4>
+                    ${p.description ? `<p class="octa-project-desc">${escapeHtml(p.description)}</p>` : ''}
+                    <div class="octa-project-foot">
+                      ${p.project_url
+                        ? `<a href="${p.project_url}" target="_blank" rel="noopener" class="octa-project-btn">Explore project <span aria-hidden="true">↗</span></a>`
+                        : `<a href="./#contact" class="octa-project-btn is-ghost">Enquire about this <span aria-hidden="true">→</span></a>`}
+                    </div>
+                  </div>
+                </article>
+              `;
+              }).join('')}
+            </div>
+
+            <div class="octa-works-empty" id="octa-works-empty" hidden>
+              <p>No projects in this category yet.</p>
+            </div>
+
+            ${isWorkPage ? `
+              <div class="octa-works-cta">
+                <div>
+                  <h4 class="octa-works-cta-title">Have a product in mind?</h4>
+                  <p class="octa-works-cta-sub">Tell us what you are building and we will come back with an approach and a timeline.</p>
+                </div>
+                <a href="./#contact" class="octa-works-cta-btn">Start a project <span aria-hidden="true">→</span></a>
+              </div>
+            ` : ''}
+          </div>
         `;
+
+        wireWorksFilters(projectsWrap);
         return true;
       }
 
-      if (!mountProjects()) {
-        let attempts = 0;
-        const interval = setInterval(() => {
-          attempts++;
-          if (mountProjects() || attempts > 30) {
-            clearInterval(interval);
-          }
-        }, 150);
-      }
+      persistMount(mountProjects);
     } catch (e) {
       console.warn('Projects fetch error:', e);
     }
+  }
+
+  // Category filter chips on the works showcase.
+  function wireWorksFilters(scope) {
+    const buttons = scope.querySelectorAll('.octa-works-filter');
+    if (!buttons.length) return;
+
+    const cards = scope.querySelectorAll('.octa-project-card');
+    const emptyNote = scope.querySelector('#octa-works-empty');
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.getAttribute('data-filter');
+
+        buttons.forEach(b => {
+          const on = b === btn;
+          b.classList.toggle('is-active', on);
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+
+        let shown = 0;
+        cards.forEach(card => {
+          const match = filter === '__all' || card.getAttribute('data-category') === filter;
+          card.hidden = !match;
+          if (match) shown++;
+        });
+
+        if (emptyNote) emptyNote.hidden = shown > 0;
+      });
+    });
   }
 
   // ---------- Persistent mounting helper ----------
@@ -760,6 +894,8 @@
     }
 
     function closeBanner() {
+      document.body.classList.remove('octa-cookie-banner-open');
+      if (window.octaUpdateSupportBubbleOffset) window.octaUpdateSupportBubbleOffset();
       const banner = document.getElementById('octa-cookie-banner');
       if (banner) {
         banner.classList.remove('octa-cookie-visible');
@@ -895,6 +1031,9 @@
     function showBanner() {
       if (document.getElementById('octa-cookie-banner')) return;
 
+      // Drives the floating support bubble out of the banner's way.
+      document.body.classList.add('octa-cookie-banner-open');
+
       const banner = document.createElement('div');
       banner.id = 'octa-cookie-banner';
       banner.className = 'octa-cookie-banner-wrap';
@@ -929,6 +1068,9 @@
 
       requestAnimationFrame(() => {
         banner.classList.add('octa-cookie-visible');
+        if (window.octaUpdateSupportBubbleOffset) {
+          requestAnimationFrame(window.octaUpdateSupportBubbleOffset);
+        }
       });
 
       document.getElementById('octa-btn-accept').addEventListener('click', () => {
@@ -1095,8 +1237,35 @@
       if (window.openOctaSupportModal) window.openOctaSupportModal();
     });
 
-    requestAnimationFrame(() => wrap.classList.add('octa-bubble-in'));
+    // rAF is paused in background tabs, so back it with a timeout: the bubble
+    // must never be left invisible and un-clickable.
+    const reveal = () => {
+      wrap.classList.add('octa-bubble-in');
+      updateSupportBubbleOffset();
+    };
+    requestAnimationFrame(reveal);
+    setTimeout(reveal, 300);
+
+    window.addEventListener('resize', updateSupportBubbleOffset);
   }
+
+  // Keeps the bubble clear of the cookie banner. Done in JS rather than CSS so
+  // the offset always tracks the banner's real height on any breakpoint.
+  function updateSupportBubbleOffset() {
+    const bubble = document.getElementById('octa-support-bubble');
+    if (!bubble) return;
+
+    const base = window.innerWidth <= 700 ? 18 : 24;
+    const banner = document.getElementById('octa-cookie-banner');
+
+    if (banner && banner.classList.contains('octa-cookie-visible')) {
+      const bannerHeight = banner.getBoundingClientRect().height;
+      bubble.style.bottom = Math.round(base + bannerHeight + 14) + 'px';
+    } else {
+      bubble.style.bottom = base + 'px';
+    }
+  }
+  window.octaUpdateSupportBubbleOffset = updateSupportBubbleOffset;
 
   // Toast Notification UI
   function showToast(message, type = 'success') {
@@ -1797,6 +1966,27 @@
       flex-wrap: wrap;
       gap: 12px;
     }
+    .octa-portfolio-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #faf7f3;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+      padding: 5px 12px;
+      font-family: "Archivo", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .octa-portfolio-chip:hover {
+      background: #faf7f3;
+      border-color: #faf7f3;
+      color: #111111;
+      transform: translateY(-1px);
+    }
     .octa-insta-chip {
       display: inline-flex;
       align-items: center;
@@ -1833,48 +2023,234 @@
     }
 
     /* Projects Wrap on Works & Home page */
+    /* ================= WORKS / PROJECTS SHOWCASE ================= */
+    /* Full-bleed dark band, matching the team showcase treatment. The light
+       Framer page sits above it, so the showcase needs its own surface for the
+       white headings and dark cards to read correctly.
+       flex-basis 100% makes it claim its own line inside a Framer flex row. */
     .octa-projects-wrap {
       width: 100%;
-      max-width: 1180px;
-      margin: 64px auto;
-      padding: 0 24px;
+      flex: 1 0 100%;
+      margin: 0;
+      padding: 84px 24px;
+      background: #0d0d10;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       box-sizing: border-box;
       position: relative;
       z-index: 5;
     }
+    .octa-works-shell {
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
     .octa-projects-header {
-      margin-bottom: 28px;
+      margin-bottom: 32px;
       text-align: center;
     }
+    .octa-works-title {
+      font-family: "Archivo", sans-serif;
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      color: #faf7f3;
+      margin: 10px 0 0;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .octa-works-intro {
+      font-family: "Inter", sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: rgba(250, 247, 243, 0.62);
+      max-width: 620px;
+      margin: 14px auto 0;
+    }
+
+    /* ---- Stat strip ---- */
+    .octa-works-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .octa-works-stat {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 16px;
+      padding: 18px 16px;
+      text-align: center;
+    }
+    .octa-works-stat-value {
+      display: block;
+      font-family: "Archivo", sans-serif;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: #faf7f3;
+      font-variant-numeric: tabular-nums;
+    }
+    .octa-works-stat-label {
+      display: block;
+      margin-top: 8px;
+      font-family: "Archivo", sans-serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(250, 247, 243, 0.45);
+    }
+
+    /* ---- Filter chips ---- */
+    .octa-works-filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 30px;
+    }
+    .octa-works-filter {
+      font-family: "Archivo", sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: rgba(250, 247, 243, 0.65);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .octa-works-filter:hover {
+      color: #faf7f3;
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    .octa-works-filter.is-active {
+      color: #111111;
+      background: #faf7f3;
+      border-color: #faf7f3;
+    }
+    .octa-works-filter:focus-visible {
+      outline: 2px solid #eb4d6d;
+      outline-offset: 2px;
+    }
+
+    /* ---- Grid & cards ---- */
     .octa-projects-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 24px;
+      gap: 22px;
     }
     .octa-project-card {
-      background: #141417;
+      position: relative;
+      background: linear-gradient(170deg, #17171c 0%, #0e0e11 100%);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 24px;
       overflow: hidden;
       color: #faf7f3;
       display: flex;
       flex-direction: column;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.3s ease;
+      animation: octaCardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      animation-delay: calc(var(--octa-card-index, 0) * 60ms);
+    }
+    .octa-project-card[hidden] { display: none; }
+    @keyframes octaCardIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .octa-project-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
+      transform: translateY(-5px);
+      box-shadow: 0 26px 54px rgba(0, 0, 0, 0.45);
       border-color: rgba(235, 77, 109, 0.35);
+    }
+
+    /* Media */
+    .octa-project-media {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      background: #1a1a20;
+      overflow: hidden;
+      flex-shrink: 0;
     }
     .octa-project-thumb {
       width: 100%;
-      height: 200px;
+      height: 100%;
       object-fit: cover;
-      background: #1a1a20;
+      display: block;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    .octa-project-card:hover .octa-project-thumb {
+      transform: scale(1.05);
+    }
+    .octa-project-media-initials {
+      display: none;
+      position: absolute;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      font-family: "Archivo", sans-serif;
+      font-size: 46px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: rgba(250, 247, 243, 0.14);
+    }
+    .octa-project-media.is-fallback {
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(235, 77, 109, 0.18) 0%, transparent 60%),
+        linear-gradient(150deg, #1d1d24 0%, #121216 100%);
+    }
+    .octa-project-media.is-fallback .octa-project-media-initials {
+      display: flex;
+    }
+    .octa-project-status-chip {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: "Archivo", sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 9999px;
+      letter-spacing: 0.02em;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .octa-project-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+    .octa-project-status-chip.coming {
+      background: rgba(235, 77, 109, 0.22);
+      color: #ff8ba5;
+      border: 1px solid rgba(235, 77, 109, 0.4);
+    }
+    .octa-project-status-chip.published {
+      background: rgba(16, 185, 129, 0.22);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    /* Content */
     .octa-project-content {
-      padding: 24px;
+      padding: 22px 24px 24px;
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -1882,67 +2258,154 @@
     .octa-project-tag {
       display: inline-block;
       align-self: flex-start;
-      font-size: 11px;
-      font-weight: 600;
-      color: #eb4d6d;
-      background: rgba(235, 77, 109, 0.12);
-      border-radius: 9999px;
-      padding: 3px 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .octa-project-status-chip {
       font-family: "Archivo", sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 9999px;
-      letter-spacing: 0.02em;
-    }
-    .octa-project-status-chip.coming {
-      background: rgba(235, 77, 109, 0.12);
+      font-size: 10.5px;
+      font-weight: 700;
       color: #eb4d6d;
-      border: 1px solid rgba(235, 77, 109, 0.3);
-    }
-    .octa-project-status-chip.published {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    .octa-cd-box-work {
-      margin-top: 32px;
-      margin-bottom: 40px;
-      width: 100%;
-      max-width: 900px;
+      background: rgba(235, 77, 109, 0.12);
+      border: 1px solid rgba(235, 77, 109, 0.22);
+      border-radius: 9999px;
+      padding: 4px 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
     }
     .octa-project-name {
       font-family: "Archivo", sans-serif;
       font-size: 20px;
       font-weight: 700;
+      letter-spacing: -0.025em;
       margin-bottom: 8px;
+      line-height: 1.25;
     }
     .octa-project-desc {
+      font-family: "Inter", sans-serif;
       font-size: 14px;
-      color: rgba(250, 247, 243, 0.65);
-      line-height: 1.5;
+      color: rgba(250, 247, 243, 0.62);
+      line-height: 1.6;
       margin-bottom: 20px;
       flex: 1;
     }
+    .octa-project-foot {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 4px;
+    }
     .octa-project-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
       align-self: flex-start;
       color: #111111;
       background: #faf7f3;
       font-family: "Archivo", sans-serif;
       font-size: 13px;
       font-weight: 600;
-      padding: 8px 18px;
+      padding: 9px 18px;
       border-radius: 9999px;
       text-decoration: none;
-      transition: background 0.2s ease, transform 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .octa-project-btn:hover {
       background: #ffffff;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+    }
+    .octa-project-btn.is-ghost {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: rgba(250, 247, 243, 0.86);
+    }
+    .octa-project-btn.is-ghost:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+    }
+
+    /* Empty filter result */
+    .octa-works-empty {
+      text-align: center;
+      padding: 48px 20px;
+      border: 1px dashed rgba(255, 255, 255, 0.16);
+      border-radius: 20px;
+      color: rgba(250, 247, 243, 0.55);
+      font-family: "Inter", sans-serif;
+      font-size: 14.5px;
+      margin-top: 22px;
+    }
+    .octa-works-empty[hidden] { display: none; }
+
+    /* Closing CTA */
+    .octa-works-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 40px;
+      padding: 30px 32px;
+      border-radius: 24px;
+      background:
+        radial-gradient(ellipse at 100% 0%, rgba(235, 77, 109, 0.16) 0%, transparent 60%),
+        linear-gradient(150deg, #17171c 0%, #0e0e11 100%);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+    .octa-works-cta-title {
+      font-family: "Archivo", sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: #faf7f3;
+      margin-bottom: 6px;
+    }
+    .octa-works-cta-sub {
+      font-family: "Inter", sans-serif;
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(250, 247, 243, 0.6);
+      max-width: 520px;
+    }
+    .octa-works-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      background: #eb4d6d;
+      color: #ffffff;
+      font-family: "Archivo", sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 13px 26px;
+      border-radius: 9999px;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .octa-works-cta-btn:hover {
+      background: #ff5e7e;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(235, 77, 109, 0.4);
+    }
+
+    .octa-cd-box-work {
+      margin-top: 32px;
+      margin-bottom: 40px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    @media (max-width: 700px) {
+      .octa-projects-wrap { padding: 54px 18px; }
+      .octa-projects-grid { grid-template-columns: 1fr; gap: 18px; }
+      .octa-works-stats { grid-template-columns: repeat(2, 1fr); }
+      .octa-project-media { height: 180px; }
+      .octa-works-cta { padding: 24px 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .octa-project-card { animation: none; }
+      .octa-project-card:hover .octa-project-thumb { transform: none; }
     }
 
     .octa-footer-pill-btn {
@@ -2449,10 +2912,6 @@
       36%        { transform: scale(1.16); }
       48%        { transform: scale(1); }
     }
-    /* Lift the bubble while the cookie banner is on screen */
-    body:has(#octa-cookie-banner) .octa-support-bubble {
-      bottom: 116px;
-    }
     /* Keep toasts clear of the bubble */
     .octa-toast-element {
       bottom: 96px !important;
@@ -2465,9 +2924,6 @@
       .octa-support-bubble-btn {
         height: 50px;
         padding: 0 14px;
-      }
-      body:has(#octa-cookie-banner) .octa-support-bubble {
-        bottom: 190px;
       }
     }
     @media print {

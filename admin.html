@@ -824,6 +824,17 @@
       text-decoration: none;
       transition: all 0.2s ease;
     }
+    .social-chip.portfolio {
+      background: rgba(16, 185, 129, 0.14);
+      color: #4ade80;
+      border-color: rgba(16, 185, 129, 0.3);
+      font-weight: 600;
+    }
+    .social-chip.portfolio:hover {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+    }
     .social-chip.insta {
       background: var(--coral-soft);
       color: #ff8ba5;
@@ -1441,6 +1452,12 @@
               <label class="form-label" for="mem-twitter">X / Twitter URL</label>
               <input type="url" id="mem-twitter" class="form-input" placeholder="https://x.com/...">
             </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="mem-portfolio">🔗 Portfolio / Personal Website</label>
+            <input type="url" id="mem-portfolio" class="form-input" placeholder="https://yourname.dev">
+            <p style="font-size:12px; color:var(--text-dark-dim); margin-top:7px;">Shown as a highlighted “Portfolio” link on the public studio page.</p>
           </div>
         </div>
         <div class="modal-footer">
@@ -2194,6 +2211,7 @@
           if (socials.github) chips.push(`<a href="${socials.github}" target="_blank" class="social-chip">GitHub ↗</a>`);
           if (socials.linkedin) chips.push(`<a href="${socials.linkedin}" target="_blank" class="social-chip">LinkedIn ↗</a>`);
           if (socials.twitter) chips.push(`<a href="${socials.twitter}" target="_blank" class="social-chip">X / Twitter ↗</a>`);
+          if (socials.portfolio) chips.push(`<a href="${socials.portfolio}" target="_blank" class="social-chip portfolio">🔗 Portfolio ↗</a>`);
 
           return `
             <div class="member-item-card">
@@ -2260,6 +2278,7 @@
       document.getElementById('mem-github').value = socials.github || '';
       document.getElementById('mem-linkedin').value = socials.linkedin || '';
       document.getElementById('mem-twitter').value = socials.twitter || '';
+      document.getElementById('mem-portfolio').value = socials.portfolio || '';
 
       document.getElementById('member-modal').classList.add('open');
     }
@@ -2283,7 +2302,8 @@
           instagram: instaRaw,
           github: document.getElementById('mem-github').value.trim(),
           linkedin: document.getElementById('mem-linkedin').value.trim(),
-          twitter: document.getElementById('mem-twitter').value.trim()
+          twitter: document.getElementById('mem-twitter').value.trim(),
+          portfolio: document.getElementById('mem-portfolio').value.trim()
         }
       };
 
