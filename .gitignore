@@ -6,4 +6,6 @@ Thumbs.db
 data/
 .chrome-temp-*/
 .tmp-chrome-*/
+.tmp-*
 *_shot.png
+*_updated.png

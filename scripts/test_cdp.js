@@ -23,7 +23,7 @@ async function getJson(port) {
 }
 
 async function main() {
-  const port = 9666;
+  const port = 9778;
   const tempDir = path.join(__dirname, '..', '.tmp-chrome-' + Date.now());
 
   const chrome = spawn(chromePath, [
@@ -32,7 +32,7 @@ async function main() {
     `--user-data-dir=${tempDir}`,
     '--disable-gpu',
     '--no-sandbox',
-    '--window-size=1280,900'
+    '--window-size=1280,1050'
   ]);
 
   try {
@@ -48,7 +48,6 @@ async function main() {
 
     if (!targets || targets.length === 0) throw new Error('No targets found');
     const pageTarget = targets.find(t => t.type === 'page') || targets[0];
-    console.log('Connecting to target:', pageTarget.webSocketDebuggerUrl);
 
     const ws = new WebSocket(pageTarget.webSocketDebuggerUrl);
     await new Promise(r => ws.on('open', r));
@@ -72,65 +71,60 @@ async function main() {
     });
 
     await send('Page.enable');
-    await send('DOM.enable');
 
-    // 1. Screenshot Admin Login
-    console.log('Loading /admin...');
-    await send('Page.navigate', { url: 'http://localhost:3000/admin' });
-    await sleep(2000);
-    const snap1 = await send('Page.captureScreenshot', { format: 'png' });
-    fs.writeFileSync(path.join(__dirname, '..', 'admin_login_shot.png'), Buffer.from(snap1.data, 'base64'));
-    console.log('Captured admin_login_shot.png');
+    // 1. Home page: Team Showcase (3 members)
+    console.log('Loading http://localhost:3000/...');
+    await send('Page.navigate', { url: 'http://localhost:3000/' });
+    await sleep(3000);
 
-    // 2. Perform Login
-    console.log('Authenticating with admin00...');
     await send('Runtime.evaluate', {
       expression: `
-        document.getElementById('admin-password').value = 'admin00';
-        document.getElementById('login-form').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        const teamSec = document.getElementById('octa-dynamic-team-section');
+        if (teamSec) teamSec.scrollIntoView({ behavior: 'instant', block: 'center' });
       `
     });
-    await sleep(2000);
-    const snap2 = await send('Page.captureScreenshot', { format: 'png' });
-    fs.writeFileSync(path.join(__dirname, '..', 'admin_dashboard_shot.png'), Buffer.from(snap2.data, 'base64'));
-    console.log('Captured admin_dashboard_shot.png');
+    await sleep(800);
+    const snapTeam = await send('Page.captureScreenshot', { format: 'png' });
+    fs.writeFileSync(path.join(__dirname, '..', 'home_team_updated.png'), Buffer.from(snapTeam.data, 'base64'));
+    console.log('Captured home_team_updated.png');
 
-    // 3. Switch to Team Tab
-    console.log('Switching to team tab...');
+    // 2. Home page: Countdown
     await send('Runtime.evaluate', {
       expression: `
-        document.querySelector('[data-tab="tab-team"]').click();
+        const cd = document.getElementById('octa-home-countdown');
+        if (cd) cd.scrollIntoView({ behavior: 'instant', block: 'center' });
       `
     });
-    await sleep(1000);
-    const snap3 = await send('Page.captureScreenshot', { format: 'png' });
-    fs.writeFileSync(path.join(__dirname, '..', 'admin_team_shot.png'), Buffer.from(snap3.data, 'base64'));
-    console.log('Captured admin_team_shot.png');
+    await sleep(800);
+    const snapCd = await send('Page.captureScreenshot', { format: 'png' });
+    fs.writeFileSync(path.join(__dirname, '..', 'home_countdown_updated.png'), Buffer.from(snapCd.data, 'base64'));
+    console.log('Captured home_countdown_updated.png');
 
-    // 4. Works page with countdown
-    console.log('Loading /work.html...');
-    await send('Page.navigate', { url: 'http://localhost:3000/work.html' });
-    await sleep(2500);
-    const snap4 = await send('Page.captureScreenshot', { format: 'png' });
-    fs.writeFileSync(path.join(__dirname, '..', 'works_countdown_shot.png'), Buffer.from(snap4.data, 'base64'));
-    console.log('Captured works_countdown_shot.png');
-
-    // 5. Index page bio/team
-    console.log('Loading /#bio-section...');
-    await send('Page.navigate', { url: 'http://localhost:3000/#bio-section' });
-    await sleep(2500);
+    // 3. Home page: Published Projects
     await send('Runtime.evaluate', {
       expression: `
-        const b = document.getElementById('bio-section');
-        if (b) b.scrollIntoView();
+        const proj = document.getElementById('octa-published-projects');
+        if (proj) proj.scrollIntoView({ behavior: 'instant', block: 'center' });
       `
     });
-    await sleep(1000);
-    const snap5 = await send('Page.captureScreenshot', { format: 'png' });
-    fs.writeFileSync(path.join(__dirname, '..', 'index_team_shot.png'), Buffer.from(snap5.data, 'base64'));
-    console.log('Captured index_team_shot.png');
+    await sleep(800);
+    const snapProj = await send('Page.captureScreenshot', { format: 'png' });
+    fs.writeFileSync(path.join(__dirname, '..', 'home_projects_updated.png'), Buffer.from(snapProj.data, 'base64'));
+    console.log('Captured home_projects_updated.png');
 
-    console.log('All screenshots completed successfully!');
+    // 4. Footer bottom bar
+    await send('Runtime.evaluate', {
+      expression: `
+        const bar = document.getElementById('octa-footer-bottom-bar');
+        if (bar) bar.scrollIntoView({ behavior: 'instant', block: 'end' });
+      `
+    });
+    await sleep(800);
+    const snapFooter = await send('Page.captureScreenshot', { format: 'png' });
+    fs.writeFileSync(path.join(__dirname, '..', 'footer_bar_updated.png'), Buffer.from(snapFooter.data, 'base64'));
+    console.log('Captured footer_bar_updated.png');
+
+    console.log('Verification completed!');
   } finally {
     chrome.kill();
     try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
