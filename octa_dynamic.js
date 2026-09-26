@@ -566,7 +566,7 @@
   // 5. ================= FOOTER SOCIALS & ADMIN PORTAL =================
   function initFooterAdminAccess() {
     function mountFooterElements() {
-      // A) In /Connect links column: Append Discord, GitHub, and Admin Portal
+      // A) In /Connect links column: Append Discord, GitHub, Privacy, Terms, and Admin Portal
       const mailLink = document.querySelector('footer a[href^="mailto:"]') || document.querySelector('a[href^="mailto:"]');
       if (mailLink && !document.getElementById('octa-footer-socials-col')) {
         const linkWrapper = document.createElement('div');
@@ -580,6 +580,14 @@
           <a class="octa-footer-social-link" href="${GITHUB_URL}" target="_blank" rel="noopener" title="Octa Devs GitHub Organization">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
             <span>github.com/octa-devs ↗</span>
+          </a>
+          <a class="octa-footer-social-link" href="/privacy.html" title="Octa Devs Privacy Policy">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span>Privacy Policy ↗</span>
+          </a>
+          <a class="octa-footer-social-link" href="/terms.html" title="Octa Devs Terms of Service">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>Terms of Service ↗</span>
           </a>
           <a class="octa-footer-admin-portal-link" href="/admin" title="Open Octa Devs Admin Panel">
             <span class="octa-admin-pulse-dot"></span>
@@ -616,6 +624,16 @@
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                 <span>${CONTACT_EMAIL}</span>
               </a>
+              <span class="octa-footer-bar-sep">·</span>
+              <a href="/privacy.html" class="octa-footer-chip-link" title="Privacy Policy">
+                <span>Privacy</span>
+              </a>
+              <a href="/terms.html" class="octa-footer-chip-link" title="Terms of Service">
+                <span>Terms</span>
+              </a>
+              <button type="button" class="octa-footer-chip-link octa-cookie-chip" onclick="window.openOctaCookiePreferences ? window.openOctaCookiePreferences() : null" title="Manage Cookie Preferences">
+                <span>Cookies 🍪</span>
+              </button>
             </div>
             <div class="octa-footer-bar-right">
               <a href="/admin" class="octa-footer-admin-pill" title="Admin Control Center">
@@ -685,6 +703,221 @@
     }
   }
 
+  // 7. ================= COOKIE CONSENT BANNER & MODAL =================
+  function initCookieConsent() {
+    const COOKIE_STORAGE_KEY = 'octa_cookie_consent';
+
+    window.openOctaCookiePreferences = function () {
+      openConsentModal();
+    };
+
+    function getConsent() {
+      try {
+        const stored = localStorage.getItem(COOKIE_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function saveConsent(consentObj) {
+      try {
+        localStorage.setItem(COOKIE_STORAGE_KEY, JSON.stringify(consentObj));
+      } catch (e) {}
+    }
+
+    function closeBanner() {
+      const banner = document.getElementById('octa-cookie-banner');
+      if (banner) {
+        banner.classList.remove('octa-cookie-visible');
+        setTimeout(() => banner.remove(), 400);
+      }
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('octa-cookie-modal');
+      if (modal) {
+        modal.classList.remove('octa-modal-visible');
+        setTimeout(() => modal.remove(), 300);
+      }
+    }
+
+    function applyConsent(settings) {
+      const consentRecord = {
+        essential: true,
+        analytics: !!settings.analytics,
+        functional: !!settings.functional,
+        timestamp: new Date().toISOString()
+      };
+      saveConsent(consentRecord);
+      closeBanner();
+      closeModal();
+      showToast('Cookie preferences updated & saved');
+    }
+
+    function openConsentModal() {
+      let existingModal = document.getElementById('octa-cookie-modal');
+      if (existingModal) existingModal.remove();
+
+      const current = getConsent() || { essential: true, analytics: true, functional: true };
+
+      const modal = document.createElement('div');
+      modal.id = 'octa-cookie-modal';
+      modal.className = 'octa-cookie-modal-backdrop';
+      modal.innerHTML = `
+        <div class="octa-cookie-modal-card" role="dialog" aria-modal="true" aria-labelledby="octa-cookie-modal-title">
+          <div class="octa-cookie-modal-header">
+            <div class="octa-cookie-badge-row">
+              <span class="octa-cookie-beacon-dot"></span>
+              <span class="octa-cookie-subheading">PRIVACY & PREFERENCES</span>
+            </div>
+            <h3 id="octa-cookie-modal-title" class="octa-cookie-modal-title">Cookie & Tracking Settings</h3>
+            <p class="octa-cookie-modal-desc">
+              Customise which categories of cookies and telemetry you allow. Essential cookies are required to deliver core website stability and security.
+            </p>
+          </div>
+
+          <div class="octa-cookie-options-list">
+            <!-- Essential -->
+            <div class="octa-cookie-option-item">
+              <div class="octa-cookie-opt-text">
+                <div class="octa-cookie-opt-title-row">
+                  <strong>Strictly Essential</strong>
+                  <span class="octa-cookie-chip-locked">Always Active</span>
+                </div>
+                <p>Required for platform authentication, CSRF security, theme state, and site navigation.</p>
+              </div>
+              <div class="octa-cookie-switch-wrap">
+                <input type="checkbox" checked disabled class="octa-toggle-checkbox">
+              </div>
+            </div>
+
+            <!-- Analytics -->
+            <div class="octa-cookie-option-item">
+              <div class="octa-cookie-opt-text">
+                <div class="octa-cookie-opt-title-row">
+                  <strong>Analytics & Telemetry</strong>
+                </div>
+                <p>Collects anonymized usage statistics to help us optimize page load speeds, design UX, and platform features.</p>
+              </div>
+              <div class="octa-cookie-switch-wrap">
+                <label class="octa-switch">
+                  <input type="checkbox" id="octa-pref-analytics" ${current.analytics !== false ? 'checked' : ''}>
+                  <span class="octa-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Functional -->
+            <div class="octa-cookie-option-item">
+              <div class="octa-cookie-opt-text">
+                <div class="octa-cookie-opt-title-row">
+                  <strong>Functional & Personalization</strong>
+                </div>
+                <p>Remembers your interface preferences and interactive settings between sessions.</p>
+              </div>
+              <div class="octa-cookie-switch-wrap">
+                <label class="octa-switch">
+                  <input type="checkbox" id="octa-pref-functional" ${current.functional !== false ? 'checked' : ''}>
+                  <span class="octa-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="octa-cookie-modal-footer">
+            <div class="octa-cookie-policy-links">
+              <a href="/privacy.html" class="octa-cookie-mini-link">Privacy Policy ↗</a>
+              <span>·</span>
+              <a href="/terms.html" class="octa-cookie-mini-link">Terms ↗</a>
+            </div>
+            <div class="octa-cookie-modal-btn-row">
+              <button type="button" class="octa-cookie-btn-sec" id="octa-modal-reject-btn">Reject All Non-Essential</button>
+              <button type="button" class="octa-cookie-btn-pri" id="octa-modal-save-btn">Save Preferences</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      requestAnimationFrame(() => {
+        modal.classList.add('octa-modal-visible');
+      });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      document.getElementById('octa-modal-save-btn').addEventListener('click', () => {
+        const analytics = document.getElementById('octa-pref-analytics').checked;
+        const functional = document.getElementById('octa-pref-functional').checked;
+        applyConsent({ analytics, functional });
+      });
+
+      document.getElementById('octa-modal-reject-btn').addEventListener('click', () => {
+        applyConsent({ analytics: false, functional: false });
+      });
+    }
+
+    function showBanner() {
+      if (document.getElementById('octa-cookie-banner')) return;
+
+      const banner = document.createElement('div');
+      banner.id = 'octa-cookie-banner';
+      banner.className = 'octa-cookie-banner-wrap';
+      banner.setAttribute('role', 'region');
+      banner.setAttribute('aria-label', 'Cookie Consent Notice');
+      banner.innerHTML = `
+        <div class="octa-cookie-banner-inner">
+          <div class="octa-cookie-banner-main">
+            <div class="octa-cookie-icon-box">
+              <span>🍪</span>
+            </div>
+            <div class="octa-cookie-text-box">
+              <div class="octa-cookie-header-row">
+                <span class="octa-cookie-title">Cookie Preferences & Privacy</span>
+                <span class="octa-cookie-pill-tag">GDPR & CCPA Compliant</span>
+              </div>
+              <p class="octa-cookie-desc">
+                We use cookies and anonymous telemetry to safeguard platform integrity, analyze traffic, and power agency features. Learn more in our 
+                <a href="/privacy.html" class="octa-cookie-text-link">Privacy Policy</a> and 
+                <a href="/terms.html" class="octa-cookie-text-link">Terms of Service</a>.
+              </p>
+            </div>
+          </div>
+          <div class="octa-cookie-actions-row">
+            <button type="button" class="octa-cookie-btn-ghost" id="octa-btn-customize">Customise</button>
+            <button type="button" class="octa-cookie-btn-sec" id="octa-btn-decline">Essential Only</button>
+            <button type="button" class="octa-cookie-btn-pri" id="octa-btn-accept">Accept All</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(banner);
+
+      requestAnimationFrame(() => {
+        banner.classList.add('octa-cookie-visible');
+      });
+
+      document.getElementById('octa-btn-accept').addEventListener('click', () => {
+        applyConsent({ analytics: true, functional: true });
+      });
+
+      document.getElementById('octa-btn-decline').addEventListener('click', () => {
+        applyConsent({ analytics: false, functional: false });
+      });
+
+      document.getElementById('octa-btn-customize').addEventListener('click', () => {
+        openConsentModal();
+      });
+    }
+
+    // Only show banner if user has not made a decision
+    const saved = getConsent();
+    if (!saved) {
+      setTimeout(showBanner, 800);
+    }
+  }
+
   // Toast Notification UI
   function showToast(message, type = 'success') {
     let toast = document.getElementById('octa-toast');
@@ -724,6 +957,364 @@
       height: auto !important;
       overflow: visible !important;
       max-width: 820px !important;
+    }
+
+    /* ================= COOKIE CONSENT BANNER & MODAL ================= */
+    .octa-cookie-banner-wrap {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(140%);
+      width: calc(100% - 40px);
+      max-width: 820px;
+      background: #111114;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 16px 22px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(235, 77, 109, 0.15);
+      z-index: 999990;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      color: #faf7f3;
+      font-family: "Inter", sans-serif;
+    }
+    .octa-cookie-banner-wrap.octa-cookie-visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .octa-cookie-banner-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .octa-cookie-banner-main {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1 1 440px;
+    }
+    .octa-cookie-icon-box {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(235, 77, 109, 0.12);
+      border: 1px solid rgba(235, 77, 109, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .octa-cookie-text-box {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .octa-cookie-header-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .octa-cookie-title {
+      font-family: "Archivo", sans-serif;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #faf7f3;
+      letter-spacing: -0.01em;
+    }
+    .octa-cookie-pill-tag {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    .octa-cookie-desc {
+      font-size: 12.5px;
+      color: rgba(250, 247, 243, 0.75);
+      line-height: 1.45;
+      margin: 0;
+    }
+    .octa-cookie-text-link {
+      color: #eb4d6d;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      font-weight: 500;
+    }
+    .octa-cookie-text-link:hover {
+      color: #ff5e7e;
+    }
+    .octa-cookie-actions-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .octa-cookie-btn-pri {
+      background: #eb4d6d;
+      color: #ffffff;
+      border: none;
+      border-radius: 9999px;
+      padding: 8px 18px;
+      font-family: "Archivo", sans-serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .octa-cookie-btn-pri:hover {
+      background: #ff5e7e;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(235, 77, 109, 0.4);
+    }
+    .octa-cookie-btn-sec {
+      background: rgba(255, 255, 255, 0.08);
+      color: #faf7f3;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 9999px;
+      padding: 8px 16px;
+      font-family: "Archivo", sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .octa-cookie-btn-sec:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    .octa-cookie-btn-ghost {
+      background: none;
+      color: rgba(250, 247, 243, 0.65);
+      border: none;
+      padding: 8px 12px;
+      font-family: "Archivo", sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s ease;
+      white-space: nowrap;
+    }
+    .octa-cookie-btn-ghost:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    /* Modal Backdrop */
+    .octa-cookie-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 20px;
+    }
+    .octa-cookie-modal-backdrop.octa-modal-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .octa-cookie-modal-card {
+      background: #121215;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 26px;
+      padding: 34px 36px;
+      max-width: 560px;
+      width: 100%;
+      color: #faf7f3;
+      font-family: "Inter", sans-serif;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .octa-cookie-modal-backdrop.octa-modal-visible .octa-cookie-modal-card {
+      transform: scale(1);
+    }
+    .octa-cookie-modal-header {
+      margin-bottom: 22px;
+    }
+    .octa-cookie-badge-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 8px;
+    }
+    .octa-cookie-beacon-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #eb4d6d;
+      box-shadow: 0 0 8px #eb4d6d;
+    }
+    .octa-cookie-subheading {
+      font-family: "Archivo", sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #eb4d6d;
+      text-transform: uppercase;
+    }
+    .octa-cookie-modal-title {
+      font-family: "Archivo", sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .octa-cookie-modal-desc {
+      font-size: 13.5px;
+      color: rgba(250, 247, 243, 0.7);
+      line-height: 1.5;
+    }
+    .octa-cookie-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .octa-cookie-option-item {
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .octa-cookie-opt-text {
+      flex: 1;
+    }
+    .octa-cookie-opt-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .octa-cookie-opt-title-row strong {
+      font-family: "Archivo", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #faf7f3;
+    }
+    .octa-cookie-chip-locked {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(250, 247, 243, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .octa-cookie-opt-text p {
+      font-size: 12px;
+      color: rgba(250, 247, 243, 0.6);
+      line-height: 1.45;
+      margin: 0;
+    }
+    /* iOS Switch */
+    .octa-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .octa-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .octa-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.16);
+      transition: .3s;
+      border-radius: 24px;
+    }
+    .octa-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    .octa-switch input:checked + .octa-slider {
+      background-color: #eb4d6d;
+    }
+    .octa-switch input:checked + .octa-slider:before {
+      transform: translateX(20px);
+    }
+    .octa-cookie-modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .octa-cookie-policy-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: rgba(250, 247, 243, 0.4);
+    }
+    .octa-cookie-mini-link {
+      color: rgba(250, 247, 243, 0.7);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .octa-cookie-mini-link:hover {
+      color: #eb4d6d;
+    }
+    .octa-cookie-modal-btn-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .octa-cookie-chip {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: inherit;
+      color: inherit;
+    }
+    .octa-cookie-chip:hover {
+      color: #eb4d6d !important;
     }
 
     /* Toast Notification */
@@ -1334,6 +1925,7 @@
     initPublishedProjects();
     initFooterAdminAccess();
     initHeaderShortcuts();
+    initCookieConsent();
   }
 
   if (document.readyState === 'loading') {

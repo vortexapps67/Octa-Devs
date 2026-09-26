@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service · Octa Devs</title>
+  <meta name="description" content="Octa Devs Terms of Service. Understand the terms, rights, and responsibilities governing our agency engineering services and website.">
+  <link rel="icon" href="/octa_favicon.jpg" type="image/jpeg">
+  <link rel="canonical" href="https://octadevs.fun/terms.html">
+  <meta property="og:title" content="Terms of Service · Octa Devs">
+  <meta property="og:description" content="Terms of Service governing Octa Devs application development services and website.">
+  <meta property="og:url" content="https://octadevs.fun/terms.html">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts: Archivo & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-cream: #FAF7F3;
+      --bg-cream-card: #FFFFFF;
+      --pill-dark: #111111;
+      --pill-dark-hover: #1c1c1f;
+      --text-dark: #111111;
+      --text-dark-muted: rgba(17, 17, 17, 0.7);
+      --text-dark-dim: rgba(17, 17, 17, 0.45);
+      --text-light: #FAF7F3;
+      --text-light-muted: rgba(250, 247, 243, 0.7);
+      --border-dark-subtle: rgba(17, 17, 17, 0.08);
+      --border-dark-strong: rgba(17, 17, 17, 0.16);
+      --border-light-subtle: rgba(255, 255, 255, 0.08);
+      --border-light-strong: rgba(255, 255, 255, 0.16);
+      --coral: #eb4d6d;
+      --coral-light: rgba(235, 77, 109, 0.08);
+      --coral-hover: #ff5e7e;
+      --green: #10b981;
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-full: 9999px;
+      --font-heading: 'Archivo', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-cream);
+      color: var(--text-dark);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      background-image: 
+        radial-gradient(ellipse at 50% -10%, rgba(235, 77, 109, 0.04) 0%, transparent 60%),
+        radial-gradient(ellipse at 85% 100%, rgba(17, 17, 17, 0.02) 0%, transparent 50%);
+      line-height: 1.6;
+    }
+
+    h1, h2, h3, h4, h5 {
+      font-family: var(--font-heading);
+      letter-spacing: -0.02em;
+      color: var(--text-dark);
+      line-height: 1.25;
+    }
+
+    /* Floating Header Capsule */
+    header.header-capsule {
+      max-width: 1200px;
+      width: calc(100% - 48px);
+      margin: 24px auto 0 auto;
+      background: var(--pill-dark);
+      border: 1px solid var(--border-light-subtle);
+      border-radius: var(--radius-full);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+      position: sticky;
+      top: 20px;
+      z-index: 100;
+      color: var(--text-light);
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo-img {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      object-fit: cover;
+      background: #1a1a1e;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: block;
+    }
+
+    .brand-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-light);
+    }
+
+    .brand-subtitle {
+      font-size: 10.5px;
+      color: var(--coral);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-pill-btn {
+      color: var(--text-light-muted);
+      font-family: var(--font-heading);
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 7px 15px;
+      border-radius: var(--radius-full);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-pill-btn:hover {
+      color: var(--text-light);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-pill-btn.active {
+      color: #111111;
+      background: var(--text-light);
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .social-header-chip {
+      color: var(--text-light-muted);
+      font-family: var(--font-heading);
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .social-header-chip:hover {
+      color: var(--text-light);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Page Layout */
+    .legal-container {
+      max-width: 880px;
+      width: calc(100% - 48px);
+      margin: 48px auto 80px auto;
+      flex-grow: 1;
+    }
+
+    /* Hero Block */
+    .legal-hero {
+      background: var(--bg-cream-card);
+      border: 1px solid var(--border-dark-subtle);
+      border-radius: var(--radius-lg);
+      padding: 44px 48px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .legal-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: var(--coral);
+    }
+
+    .section-tag {
+      font-family: var(--font-heading);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--coral);
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .section-tag::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--coral);
+    }
+
+    .legal-title {
+      font-size: 42px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      color: var(--text-dark);
+    }
+
+    .legal-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      color: var(--text-dark-dim);
+      font-size: 13.5px;
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .legal-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legal-intro-quote {
+      font-size: 16px;
+      color: var(--text-dark-muted);
+      background: var(--bg-cream);
+      border: 1px solid var(--border-dark-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      line-height: 1.65;
+    }
+
+    /* Table of Contents */
+    .toc-card {
+      background: var(--bg-cream-card);
+      border: 1px solid var(--border-dark-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    }
+
+    .toc-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-dark-dim);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px 20px;
+      list-style: none;
+    }
+
+    .toc-grid a {
+      color: var(--text-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toc-grid a:hover {
+      color: var(--coral);
+      transform: translateX(2px);
+    }
+
+    .toc-grid a span.num {
+      color: var(--coral);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    /* Content Cards */
+    .legal-section-card {
+      background: var(--bg-cream-card);
+      border: 1px solid var(--border-dark-subtle);
+      border-radius: var(--radius-md);
+      padding: 36px 40px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+      scroll-margin-top: 100px;
+    }
+
+    .section-anchor-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-dark-subtle);
+    }
+
+    .section-num-badge {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      background: var(--pill-dark);
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .section-heading-text {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .legal-section-card p {
+      font-size: 15px;
+      color: var(--text-dark-muted);
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+
+    .legal-section-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .legal-list {
+      list-style: none;
+      margin: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .legal-list li {
+      font-size: 14.5px;
+      color: var(--text-dark-muted);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.6;
+    }
+
+    .legal-list li::before {
+      content: '→';
+      color: var(--coral);
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .highlight-box {
+      background: var(--coral-light);
+      border: 1px solid rgba(235, 77, 109, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      margin: 18px 0;
+      font-size: 14px;
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+
+    .highlight-box strong {
+      color: var(--coral);
+    }
+
+    .dark-card-callout {
+      background: var(--pill-dark);
+      color: var(--text-light);
+      border-radius: var(--radius-md);
+      padding: 26px 30px;
+      margin: 24px 0;
+      border: 1px solid var(--border-light-subtle);
+    }
+
+    .dark-card-callout h4 {
+      color: var(--text-light);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .dark-card-callout p {
+      color: var(--text-light-muted);
+      font-size: 14px;
+    }
+
+    .legal-link {
+      color: var(--coral);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 500;
+    }
+
+    .legal-link:hover {
+      color: var(--coral-hover);
+    }
+
+    /* Footer */
+    footer.legal-footer {
+      background: var(--pill-dark);
+      color: var(--text-light);
+      padding: 48px 24px 80px 24px;
+      border-top: 1px solid var(--border-light-subtle);
+      margin-top: auto;
+    }
+
+    .legal-footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .footer-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-light-subtle);
+    }
+
+    .footer-links-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link-item {
+      color: var(--text-light-muted);
+      font-size: 13.5px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer-link-item:hover {
+      color: var(--text-light);
+    }
+
+    .footer-bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 12.5px;
+      color: rgba(250, 247, 243, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      header.header-capsule {
+        width: calc(100% - 24px);
+        margin: 16px auto;
+        padding: 8px 14px;
+      }
+      .header-nav { display: none; }
+      .legal-hero { padding: 30px 24px; }
+      .legal-section-card { padding: 26px 20px; }
+      .legal-title { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Navigation Capsule -->
+  <header class="header-capsule">
+    <a href="/" class="brand-wrap">
+      <img src="/octa_favicon.jpg" alt="Octa Devs Logo" class="brand-logo-img">
+      <div class="brand-title-wrap">
+        <span class="brand-title">OCTA DEVS</span>
+        <span class="brand-subtitle">TERMS & LEGAL</span>
+      </div>
+    </a>
+
+    <nav class="header-nav">
+      <a href="/" class="nav-pill-btn">Home</a>
+      <a href="/work.html" class="nav-pill-btn">Works</a>
+      <a href="/blog.html" class="nav-pill-btn">Blog</a>
+      <a href="/privacy.html" class="nav-pill-btn">Privacy</a>
+      <a href="/terms.html" class="nav-pill-btn active">Terms</a>
+    </nav>
+
+    <div class="header-actions">
+      <a href="https://github.com/octa-devs" target="_blank" rel="noopener" class="social-header-chip" title="GitHub">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        <span>GitHub</span>
+      </a>
+      <a href="https://discord.gg/6t8GfTSRBN" target="_blank" rel="noopener" class="social-header-chip" title="Discord">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span>Discord</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Legal Container -->
+  <main class="legal-container">
+
+    <!-- Hero Card -->
+    <div class="legal-hero">
+      <span class="section-tag">AGREEMENT & SERVICE GOVERNANCE</span>
+      <h1 class="legal-title">Terms of Service</h1>
+      <div class="legal-meta-row">
+        <div class="legal-meta-item">
+          <span>📅 Effective Date:</span>
+          <strong>September 26, 2026</strong>
+        </div>
+        <span>·</span>
+        <div class="legal-meta-item">
+          <span>⚡ Last Updated:</span>
+          <strong>September 26, 2026</strong>
+        </div>
+        <span>·</span>
+        <div class="legal-meta-item">
+          <span>🏢 Studio:</span>
+          <strong>Octa Devs</strong>
+        </div>
+      </div>
+      <p class="legal-intro-quote">
+        These Terms of Service govern your relationship with Octa Devs, your access to <strong>https://octadevs.fun</strong>, and any software engineering, application architecture, UI/UX design, or technical consulting services delivered by our studio. By browsing our website or contracting our engineering team, you agree to be bound by these Terms.
+      </p>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc-card">
+      <div class="toc-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+        <span>Table of Contents</span>
+      </div>
+      <ul class="toc-grid">
+        <li><a href="/terms.html#sec-1"><span class="num">01</span> Acceptance of Terms</a></li>
+        <li><a href="/terms.html#sec-2"><span class="num">02</span> Studio Engineering Services</a></li>
+        <li><a href="/terms.html#sec-3"><span class="num">03</span> Proposals, SOWs & Estimates</a></li>
+        <li><a href="/terms.html#sec-4"><span class="num">04</span> Intellectual Property & Ownership</a></li>
+        <li><a href="/terms.html#sec-5"><span class="num">05</span> Client Obligations & Materials</a></li>
+        <li><a href="/terms.html#sec-6"><span class="num">06</span> Invoicing, Retainers & Milestones</a></li>
+        <li><a href="/terms.html#sec-7"><span class="num">07</span> Confidentiality & Non-Disclosure</a></li>
+        <li><a href="/terms.html#sec-8"><span class="num">08</span> Warranties & Quality Assurance</a></li>
+        <li><a href="/terms.html#sec-9"><span class="num">09</span> Limitation of Liability</a></li>
+        <li><a href="/terms.html#sec-10"><span class="num">10</span> Termination & Cancellation</a></li>
+        <li><a href="/terms.html#sec-11"><span class="num">11</span> Governing Law & Disputes</a></li>
+        <li><a href="/terms.html#sec-12"><span class="num">12</span> Studio Contact Information</a></li>
+      </ul>
+    </div>
+
+    <!-- Section 1 -->
+    <section class="legal-section-card" id="sec-1">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">01</div>
+        <h2 class="section-heading-text">Acceptance of Terms</h2>
+      </div>
+      <p>
+        By accessing or using the Octa Devs website (<a href="https://octadevs.fun" class="legal-link">https://octadevs.fun</a>), engaging with our communication channels, or signing a Statement of Work (SOW) or software proposal with Octa Devs, you acknowledge that you have read, understood, and agree to be legally bound by these Terms of Service and our <a href="/privacy.html" class="legal-link">Privacy Policy</a>.
+      </p>
+      <p>
+        If you are entering into this agreement on behalf of a company, startup, or other legal entity, you represent and warrant that you have the full authority to bind that entity to these Terms.
+      </p>
+    </section>
+
+    <!-- Section 2 -->
+    <section class="legal-section-card" id="sec-2">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">02</div>
+        <h2 class="section-heading-text">Studio Engineering Services</h2>
+      </div>
+      <p>
+        Octa Devs provides premium bespoke digital product design and software development services, including but not limited to:
+      </p>
+      <ul class="legal-list">
+        <li><strong>Native & Cross-Platform Mobile Applications:</strong> iOS, Android, and cross-platform architectures (Flutter, React Native).</li>
+        <li><strong>Modern Web Platforms:</strong> Next.js, React, Node.js, and modern performant web systems.</li>
+        <li><strong>Backend Architecture & Databases:</strong> Supabase PostgreSQL, real-time APIs, serverless infrastructure, and high-availability backends.</li>
+        <li><strong>UI/UX Design Systems:</strong> Product wireframing, high-fidelity prototypes, brand identity systems, and user interface engineering.</li>
+        <li><strong>Technical Consultation & Code Audits:</strong> Architecture reviews, performance optimizations, and infrastructure strategy.</li>
+      </ul>
+    </section>
+
+    <!-- Section 3 -->
+    <section class="legal-section-card" id="sec-3">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">03</div>
+        <h2 class="section-heading-text">Proposals, SOWs & Estimates</h2>
+      </div>
+      <p>
+        All project inquiries initiated through our website form, email (<a href="mailto:hello@octadevs.fun" class="legal-link">hello@octadevs.fun</a>), or Discord are subject to studio review and confirmation.
+      </p>
+      <ul class="legal-list">
+        <li><strong>Estimates:</strong> Preliminary budget estimates or timelines provided informally do not constitute a binding contract until ratified in a formal Statement of Work (SOW).</li>
+        <li><strong>Scope of Work:</strong> Each production engagement will detail deliverables, sprint milestones, acceptance criteria, and fee structures in a mutually executed SOW.</li>
+        <li><strong>Scope Adjustments:</strong> Any alterations, additions, or feature expansions beyond the agreed SOW will be managed via formal change requests with adjusted pricing and timelines.</li>
+      </ul>
+    </section>
+
+    <!-- Section 4 -->
+    <section class="legal-section-card" id="sec-4">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">04</div>
+        <h2 class="section-heading-text">Intellectual Property & Ownership</h2>
+      </div>
+      <p>
+        We respect intellectual property rights and maintain transparent ownership structures:
+      </p>
+      <ul class="legal-list">
+        <li><strong>Client Deliverables:</strong> Upon receipt of complete payment for the contracted services, all custom source code, design assets, illustrations, and deliverables authored specifically for the client transfer to the client as work-for-hire.</li>
+        <li><strong>Studio Background IP:</strong> Octa Devs retains full ownership of its pre-existing proprietary tools, boilerplate frameworks, helper utilities, and code libraries developed independently of client projects. Clients receive a perpetual, non-exclusive, royalty-free license to utilize such components embedded within their deliverables.</li>
+        <li><strong>Third-Party & Open Source:</strong> Any third-party software, open-source dependencies (e.g. MIT/Apache licensed packages), or external APIs remain subject to their respective licenses.</li>
+      </ul>
+      <div class="highlight-box">
+        <strong>Portfolio Showcase:</strong> Unless explicitly restricted by an active Non-Disclosure Agreement (NDA), Octa Devs reserves the right to showcase non-confidential screenshots, app previews, and descriptions of completed projects in our portfolio and marketing channels.
+      </div>
+    </section>
+
+    <!-- Section 5 -->
+    <section class="legal-section-card" id="sec-5">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">05</div>
+        <h2 class="section-heading-text">Client Obligations & Materials</h2>
+      </div>
+      <p>
+        To ensure timely delivery of software projects, clients agree to:
+      </p>
+      <ul class="legal-list">
+        <li><strong>Timely Feedback:</strong> Review deliverables and provide design or sprint milestone approvals within five (5) business days of submission.</li>
+        <li><strong>Asset Provision:</strong> Provide necessary brand guidelines, API access keys, developer accounts, copy, and creative assets required for implementation.</li>
+        <li><strong>Ownership Warranty:</strong> Guarantee that all materials, graphics, text, and trademarks supplied to Octa Devs are owned by the client or properly licensed, free from copyright infringement.</li>
+      </ul>
+    </section>
+
+    <!-- Section 6 -->
+    <section class="legal-section-card" id="sec-6">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">06</div>
+        <h2 class="section-heading-text">Invoicing, Retainers & Milestones</h2>
+      </div>
+      <p>
+        Standard payment schedules are outlined in individual project proposals:
+      </p>
+      <ul class="legal-list">
+        <li><strong>Project Retainers:</strong> Most fixed-scope contracts require a non-refundable upfront commencement deposit (typically 30% to 50%) prior to sprint initiation.</li>
+        <li><strong>Milestone Payments:</strong> Remaining balances are invoiced upon delivery of defined project milestones (e.g. Alpha prototype, Beta release, final App Store submission).</li>
+        <li><strong>Payment Terms:</strong> Invoices are payable within fourteen (14) calendar days of receipt. Overdue balances may result in temporary suspension of development or deployment activities.</li>
+      </ul>
+    </section>
+
+    <!-- Section 7 -->
+    <section class="legal-section-card" id="sec-7">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">07</div>
+        <h2 class="section-heading-text">Confidentiality & Non-Disclosure</h2>
+      </div>
+      <p>
+        Both parties agree to treat all non-public proprietary information disclosed during discussions or project execution as confidential:
+      </p>
+      <ul class="legal-list">
+        <li>Confidential information includes business strategies, unreleased feature roadmaps, proprietary algorithms, financial terms, and client user data.</li>
+        <li>Neither party will disclose such information to third parties without prior written consent, except to contractors and legal/financial advisors bound by equivalent confidentiality obligations.</li>
+      </ul>
+    </section>
+
+    <!-- Section 8 -->
+    <section class="legal-section-card" id="sec-8">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">08</div>
+        <h2 class="section-heading-text">Warranties & Quality Assurance</h2>
+      </div>
+      <p>
+        Octa Devs warrants that all software delivered will be engineered in a professional, workmanlike manner adhering to current industry standards and will perform substantially in accordance with agreed specifications.
+      </p>
+      <div class="dark-card-callout">
+        <h4>30-Day Post-Launch Warranty Period</h4>
+        <p>Following final deployment or release acceptance, Octa Devs provides thirty (30) calendar days of complimentary bug-fixing warranty support for reproducible defects violating the original SOW specifications.</p>
+      </div>
+      <p>
+        Except as expressly stated, the website and preliminary materials are provided "as is" without warranty of any kind, whether express, statutory, or implied.
+      </p>
+    </section>
+
+    <!-- Section 9 -->
+    <section class="legal-section-card" id="sec-9">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">09</div>
+        <h2 class="section-heading-text">Limitation of Liability</h2>
+      </div>
+      <p>
+        To the maximum extent permitted by applicable law:
+      </p>
+      <ul class="legal-list">
+        <li>In no event shall Octa Devs, its founders (Aarav Sharma, Akshansh Sinha), partners, or contractors be liable for any indirect, consequential, special, punitive, or incidental damages, including loss of profits, data loss, or business interruption.</li>
+        <li>The aggregate liability of Octa Devs arising out of or related to any project engagement shall not exceed the total fees actually paid by the client under the specific Statement of Work giving rise to the claim in the twelve (12) months preceding the incident.</li>
+      </ul>
+    </section>
+
+    <!-- Section 10 -->
+    <section class="legal-section-card" id="sec-10">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">10</div>
+        <h2 class="section-heading-text">Termination & Cancellation</h2>
+      </div>
+      <p>
+        Either party may terminate a project engagement under the terms specified in the SOW:
+      </p>
+      <ul class="legal-list">
+        <li><strong>Termination for Convenience:</strong> Upon thirty (30) days written notice, with the client compensating Octa Devs for all completed hours and approved milestones up to the effective termination date.</li>
+        <li><strong>Termination for Cause:</strong> Immediately if either party materially breaches any provision of these Terms or the SOW and fails to cure such breach within fourteen (14) days of written notice.</li>
+      </ul>
+    </section>
+
+    <!-- Section 11 -->
+    <section class="legal-section-card" id="sec-11">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">11</div>
+        <h2 class="section-heading-text">Governing Law & Disputes</h2>
+      </div>
+      <p>
+        These Terms and any contractual disputes arising between the parties shall be governed by and construed in accordance with the laws applicable to digital agency contracts. The parties agree to first seek informal amicable resolution in good faith before initiating any formal legal or arbitration proceedings.
+      </p>
+    </section>
+
+    <!-- Section 12 -->
+    <section class="legal-section-card" id="sec-12">
+      <div class="section-anchor-header">
+        <div class="section-num-badge">12</div>
+        <h2 class="section-heading-text">Studio Contact Information</h2>
+      </div>
+      <p>
+        For inquiries regarding these Terms, commercial contracts, or master service agreements (MSAs), please contact our legal and founding team:
+      </p>
+      <div class="dark-card-callout">
+        <h4>Octa Devs — Contracts & Legal Office</h4>
+        <p>Email: <a href="mailto:hello@octadevs.fun" style="color:var(--coral); text-decoration:none; font-weight:600;">hello@octadevs.fun</a></p>
+        <p style="margin-top:6px;">Official Portal: <a href="https://octadevs.fun" style="color:#ffffff; text-decoration:underline;">https://octadevs.fun</a></p>
+        <p style="margin-top:6px;">Discord Server: <a href="https://discord.gg/6t8GfTSRBN" target="_blank" rel="noopener" style="color:#ffffff; text-decoration:underline;">https://discord.gg/6t8GfTSRBN</a></p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Legal Footer -->
+  <footer class="legal-footer">
+    <div class="legal-footer-inner">
+      <div class="footer-top-row">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="/octa_favicon.jpg" alt="Logo" style="width:28px; height:28px; border-radius:7px;">
+          <span style="font-family:var(--font-heading); font-size:15px; font-weight:700; color:#ffffff;">OCTA DEVS</span>
+        </div>
+        <div class="footer-links-row">
+          <a href="/" class="footer-link-item">Home</a>
+          <a href="/work.html" class="footer-link-item">Works</a>
+          <a href="/blog.html" class="footer-link-item">Blog</a>
+          <a href="/privacy.html" class="footer-link-item">Privacy Policy</a>
+          <a href="/terms.html" class="footer-link-item" style="color:#ffffff; font-weight:600;">Terms of Service</a>
+          <a href="/admin" class="footer-link-item">Admin Studio</a>
+        </div>
+      </div>
+      <div class="footer-bottom-row">
+        <span>© 2026 Octa Devs. All rights reserved.</span>
+        <span>Designed & Engineered for Production</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Dynamic features: Bottom Bar & Cookie Preferences -->
+  <script src="./octa_dynamic.js"></script>
+</body>
+</html>
