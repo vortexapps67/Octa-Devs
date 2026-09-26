@@ -490,11 +490,18 @@
       }
 
       if (!Array.isArray(projects)) return;
-      const published = Array.isArray(projects) ? projects.filter(p => p.status === 'Published') : [];
+      const published = projects.filter(p => p.status === 'Published');
       const isWorkPage = window.location.pathname.includes('work') || window.location.href.includes('work.html');
 
-      // If home page and no published projects, return
-      if (!isWorkPage && published.length === 0) return;
+      // Works page lists everything the admin has created except drafts, so
+      // "Coming Soon" entries show up there and stay fully manageable from the
+      // admin panel. The home page only ever shows shipped work.
+      const displayItems = isWorkPage
+        ? projects.filter(p => p.status !== 'Draft')
+        : published;
+
+      // Home page with nothing shipped yet: render nothing at all.
+      if (!isWorkPage && displayItems.length === 0) return;
 
       function mountProjects() {
         let targetParent = null;
@@ -547,35 +554,33 @@
           }
         }
 
-        const displayItems = published.length > 0 ? published : (
-          isWorkPage ? [
-            {
-              title: 'Apex Financial Platform',
-              category: 'Mobile App · iOS & Android',
-              description: 'Next-generation fintech suite built with React Native and Supabase real-time engine.',
-              status: 'Coming Soon'
-            },
-            {
-              title: 'Vortex Cloud Workspace',
-              category: 'Web Application · SaaS',
-              description: 'Collaborative cloud dashboard for high-growth tech teams and automated workflows.',
-              status: 'Coming Soon'
-            },
-            {
-              title: 'Pulse Studio Design System',
-              category: 'Design System · UI/UX',
-              description: 'Unified component system and design language engineered for multi-platform scale.',
-              status: 'Coming Soon'
-            }
-          ] : []
-        );
-
-        if (displayItems.length === 0) return true;
 
         // Already rendered and still intact: leave it alone. Re-running the
         // render would wipe the active filter and restart the card animations
         // every time persistMount ticks.
         if (projectsWrap.querySelector('.octa-works-shell')) return true;
+
+        // Nothing to show yet. On the works page keep the section with a
+        // placeholder message; everything here is driven by the admin panel.
+        if (displayItems.length === 0) {
+          projectsWrap.innerHTML = `
+            <div class="octa-works-shell">
+              <div class="octa-projects-header">
+                <span class="octa-section-tag">/SELECTED WORKS · SHOWCASE</span>
+                <h3 class="octa-works-title">New work is on the way</h3>
+                <p class="octa-works-intro">We are heads-down building. Our next products will be listed here as soon as they are ready to show.</p>
+              </div>
+              <div class="octa-works-cta">
+                <div>
+                  <h4 class="octa-works-cta-title">Have a product in mind?</h4>
+                  <p class="octa-works-cta-sub">Tell us what you are building and we will come back with an approach and a timeline.</p>
+                </div>
+                <a href="./#contact" class="octa-works-cta-btn">Start a project <span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          `;
+          return true;
+        }
 
         const isLive = published.length > 0;
 
@@ -593,7 +598,7 @@
           <div class="octa-works-stats">
             <div class="octa-works-stat">
               <span class="octa-works-stat-value">${displayItems.length}</span>
-              <span class="octa-works-stat-label">Total Projects</span>
+              <span class="octa-works-stat-label">${displayItems.length === 1 ? 'Project' : 'Total Projects'}</span>
             </div>
             <div class="octa-works-stat">
               <span class="octa-works-stat-value">${publishedCount}</span>
@@ -605,7 +610,7 @@
             </div>
             <div class="octa-works-stat">
               <span class="octa-works-stat-value">${categories.length}</span>
-              <span class="octa-works-stat-label">Disciplines</span>
+              <span class="octa-works-stat-label">${categories.length === 1 ? 'Discipline' : 'Disciplines'}</span>
             </div>
           </div>
         ` : '';
