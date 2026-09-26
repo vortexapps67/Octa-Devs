@@ -160,22 +160,16 @@
     
     function tryMount() {
       if (isWorkPage) {
-        // Works page: inside coming soon card
-        const comingSoonCard = document.querySelector('.octa-minimal-card, .octa-coming-wrapper, .octa-coming-soon-card');
+        // Works page: inside hero section or container
+        const comingSoonCard = document.querySelector('#hero-section .framer-1qh84jt, #hero-section, .framer-1kxryyl, .octa-minimal-card, .octa-coming-wrapper, .octa-coming-soon-card');
         if (!comingSoonCard) return false;
 
         let cdContainer = document.getElementById('octa-live-countdown');
         if (!cdContainer) {
           cdContainer = document.createElement('div');
           cdContainer.id = 'octa-live-countdown';
-          cdContainer.className = 'octa-cd-box';
-          
-          const actionWrap = comingSoonCard.querySelector('.octa-card-actions, .octa-action-wrap');
-          if (actionWrap) {
-            comingSoonCard.insertBefore(cdContainer, actionWrap);
-          } else {
-            comingSoonCard.appendChild(cdContainer);
-          }
+          cdContainer.className = 'octa-cd-box octa-cd-box-work';
+          comingSoonCard.appendChild(cdContainer);
         }
 
         cdContainer.innerHTML = buildCountdownHtml(countdown.title, countdown.target_date);
@@ -485,20 +479,21 @@
       }
 
       if (!Array.isArray(projects)) return;
-      const published = projects.filter(p => p.status === 'Published');
-      if (published.length === 0) return;
-
+      const published = Array.isArray(projects) ? projects.filter(p => p.status === 'Published') : [];
       const isWorkPage = window.location.pathname.includes('work') || window.location.href.includes('work.html');
+
+      // If home page and no published projects, return
+      if (!isWorkPage && published.length === 0) return;
 
       function mountProjects() {
         let targetParent = null;
         let insertBeforeNode = null;
 
         if (isWorkPage) {
-          const comingSoonCard = document.querySelector('.octa-coming-wrapper, .octa-minimal-card, .octa-coming-soon-card');
-          if (!comingSoonCard || !comingSoonCard.parentNode) return false;
-          targetParent = comingSoonCard.parentNode;
-          insertBeforeNode = comingSoonCard.nextSibling;
+          const workContainer = document.querySelector('#hero-section .framer-1qh84jt, #hero-section, .framer-1kxryyl, .framer-1f5wx7y');
+          if (!workContainer) return false;
+          targetParent = workContainer;
+          insertBeforeNode = null;
         } else {
           // Home page: Mount between Coming Soon Section and Dev Team Section
           const teamSection = document.getElementById('octa-dynamic-team-section');
@@ -524,23 +519,55 @@
           projectsWrap = document.createElement('div');
           projectsWrap.id = 'octa-published-projects';
           projectsWrap.className = 'octa-projects-wrap';
-          targetParent.insertBefore(projectsWrap, insertBeforeNode);
+          if (insertBeforeNode) {
+            targetParent.insertBefore(projectsWrap, insertBeforeNode);
+          } else {
+            targetParent.appendChild(projectsWrap);
+          }
         }
+
+        const displayItems = published.length > 0 ? published : (
+          isWorkPage ? [
+            {
+              title: 'Apex Financial Platform',
+              category: 'Mobile App · iOS & Android',
+              description: 'Next-generation fintech suite built with React Native and Supabase real-time engine.',
+              status: 'Coming Soon'
+            },
+            {
+              title: 'Vortex Cloud Workspace',
+              category: 'Web Application · SaaS',
+              description: 'Collaborative cloud dashboard for high-growth tech teams and automated workflows.',
+              status: 'Coming Soon'
+            },
+            {
+              title: 'Pulse Studio Design System',
+              category: 'Design System · UI/UX',
+              description: 'Unified component system and design language engineered for multi-platform scale.',
+              status: 'Coming Soon'
+            }
+          ] : []
+        );
+
+        if (displayItems.length === 0) return true;
 
         projectsWrap.innerHTML = `
           <div class="octa-projects-header">
-            <span class="octa-section-tag">/SELECTED WORK</span>
-            <h3 class="octa-team-title">Featured Applications & Platforms</h3>
+            <span class="octa-section-tag">/SELECTED WORKS · SHOWCASE</span>
+            <h3 class="octa-team-title">${published.length > 0 ? 'Featured Applications & Platforms' : 'Upcoming Products Under Active Engineering'}</h3>
           </div>
           <div class="octa-projects-grid">
-            ${published.map(p => `
+            ${displayItems.map(p => `
               <div class="octa-project-card">
                 ${p.image_url ? `<img src="${p.image_url}" class="octa-project-thumb" alt="${escapeHtml(p.title)}" onerror="this.style.display='none'">` : ''}
                 <div class="octa-project-content">
-                  <div class="octa-project-tag">${escapeHtml(p.category || 'Mobile & Web')}</div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div class="octa-project-tag">${escapeHtml(p.category || 'Mobile & Web')}</div>
+                    <span class="octa-project-status-chip ${p.status === 'Published' ? 'published' : 'coming'}">${escapeHtml(p.status || 'Coming Soon')}</span>
+                  </div>
                   <h4 class="octa-project-name">${escapeHtml(p.title)}</h4>
                   <p class="octa-project-desc">${escapeHtml(p.description || '')}</p>
-                  ${p.project_url ? `<a href="${p.project_url}" target="_blank" rel="noopener" class="octa-project-btn">Explore Project →</a>` : ''}
+                  ${p.project_url ? `<a href="${p.project_url}" target="_blank" rel="noopener" class="octa-project-btn">Explore Project →</a>` : `<a href="./#contact" class="octa-project-btn">Inquire About Project →</a>`}
                 </div>
               </div>
             `).join('')}
@@ -1753,9 +1780,32 @@
       background: rgba(235, 77, 109, 0.12);
       border-radius: 9999px;
       padding: 3px 10px;
-      margin-bottom: 12px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+    }
+    .octa-project-status-chip {
+      font-family: "Archivo", sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      letter-spacing: 0.02em;
+    }
+    .octa-project-status-chip.coming {
+      background: rgba(235, 77, 109, 0.12);
+      color: #eb4d6d;
+      border: 1px solid rgba(235, 77, 109, 0.3);
+    }
+    .octa-project-status-chip.published {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .octa-cd-box-work {
+      margin-top: 32px;
+      margin-bottom: 40px;
+      width: 100%;
+      max-width: 900px;
     }
     .octa-project-name {
       font-family: "Archivo", sans-serif;
