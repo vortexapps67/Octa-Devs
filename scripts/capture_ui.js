@@ -23,7 +23,7 @@ function fetchJson(url) {
 }
 
 async function capture() {
-  const port = 9555;
+  const port = 9556;
   const userDataDir = path.join(__dirname, '..', '.chrome-temp-' + Date.now());
 
   const chrome = spawn(chromePath, [
@@ -36,7 +36,6 @@ async function capture() {
   ]);
 
   try {
-    // Wait for Chrome
     let pageWsUrl = null;
     for (let i = 0; i < 20; i++) {
       try {
@@ -51,7 +50,7 @@ async function capture() {
     }
 
     if (!pageWsUrl) throw new Error('Could not find page target');
-    console.log('Connecting to page target:', pageWsUrl);
+    console.log('Connecting to Chrome CDP...');
 
     const ws = new WebSocket(pageWsUrl);
     await new Promise(r => ws.on('open', r));
@@ -70,6 +69,7 @@ async function capture() {
 
     const send = (method, params = {}) => new Promise((resolve, reject) => {
       const id = msgId++;
+      console.log('Sending:', id, method);
       pending.set(id, { resolve, reject });
       ws.send(JSON.stringify({ id, method, params }));
     });
@@ -83,8 +83,8 @@ async function capture() {
       mobile: false
     });
 
-    // 1. Admin Login
-    console.log('Navigating to http://localhost:3000/admin...');
+    // 1. Admin Login (Check admin00 is gone)
+    console.log('1. Navigating to http://localhost:3000/admin...');
     await send('Page.navigate', { url: 'http://localhost:3000/admin' });
     await sleep(2000);
     const snap1 = await send('Page.captureScreenshot', { format: 'png' });
@@ -98,35 +98,71 @@ async function capture() {
         document.getElementById('login-form').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
       `
     });
-    await sleep(2500);
-    const snap2 = await send('Page.captureScreenshot', { format: 'png' });
-    fs.writeFileSync('admin_dashboard.png', Buffer.from(snap2.data, 'base64'));
-    console.log('Saved admin_dashboard.png');
+    await sleep(2000);
 
-    // 3. Works Page
-    console.log('Navigating to http://localhost:3000/work.html...');
-    await send('Page.navigate', { url: 'http://localhost:3000/work.html' });
-    await sleep(2500);
-    const snap3 = await send('Page.captureScreenshot', { format: 'png' });
-    fs.writeFileSync('works_countdown.png', Buffer.from(snap3.data, 'base64'));
-    console.log('Saved works_countdown.png');
-
-    // 4. Bio Section on Home
-    console.log('Navigating to http://localhost:3000/#bio-section...');
-    await send('Page.navigate', { url: 'http://localhost:3000/' });
-    await sleep(2500);
+    // Click on Database tab
     await send('Runtime.evaluate', {
       expression: `
-        const b = document.getElementById('bio-section');
-        if (b) b.scrollIntoView();
+        const btn = document.querySelector('button[data-tab="tab-database"]');
+        if (btn) btn.click();
+      `
+    });
+    await sleep(1500);
+    const snap2 = await send('Page.captureScreenshot', { format: 'png' });
+    fs.writeFileSync('admin_database.png', Buffer.from(snap2.data, 'base64'));
+    console.log('Saved admin_database.png');
+
+    // 3. Home page: Coming Soon & Release Clock
+    console.log('3. Navigating to http://localhost:3000/...');
+    await send('Page.navigate', { url: 'http://localhost:3000/' });
+    await sleep(2500);
+    
+    // Scroll to Coming Soon
+    await send('Runtime.evaluate', {
+      expression: `
+        const cs = document.querySelector('[data-framer-name="Coming Soon Section"], .framer-1koelmu');
+        if (cs) cs.scrollIntoView({ behavior: 'instant', block: 'center' });
+      `
+    });
+    await sleep(1000);
+    const snap3 = await send('Page.captureScreenshot', { format: 'png' });
+    fs.writeFileSync('home_countdown.png', Buffer.from(snap3.data, 'base64'));
+    console.log('Saved home_countdown.png');
+
+    // 4. Home page: Dev Team section at down
+    console.log('4. Scrolling to Dev Team section at down...');
+    await send('Runtime.evaluate', {
+      expression: `
+        const ts = document.getElementById('octa-dynamic-team-section');
+        if (ts) ts.scrollIntoView({ behavior: 'instant', block: 'start' });
       `
     });
     await sleep(1000);
     const snap4 = await send('Page.captureScreenshot', { format: 'png' });
-    fs.writeFileSync('index_team.png', Buffer.from(snap4.data, 'base64'));
-    console.log('Saved index_team.png');
+    fs.writeFileSync('home_team_at_down.png', Buffer.from(snap4.data, 'base64'));
+    console.log('Saved home_team_at_down.png');
 
-    console.log('All screenshots captured successfully!');
+    // 5. Home page: Footer & Socials
+    console.log('5. Scrolling to Footer...');
+    await send('Runtime.evaluate', {
+      expression: `
+        window.scrollTo(0, document.body.scrollHeight);
+      `
+    });
+    await sleep(1000);
+    const snap5 = await send('Page.captureScreenshot', { format: 'png' });
+    fs.writeFileSync('home_footer_socials.png', Buffer.from(snap5.data, 'base64'));
+    console.log('Saved home_footer_socials.png');
+
+    // 6. Works Page
+    console.log('6. Navigating to http://localhost:3000/work.html...');
+    await send('Page.navigate', { url: 'http://localhost:3000/work.html' });
+    await sleep(2500);
+    const snap6 = await send('Page.captureScreenshot', { format: 'png' });
+    fs.writeFileSync('works_countdown.png', Buffer.from(snap6.data, 'base64'));
+    console.log('Saved works_countdown.png');
+
+    console.log('All screenshots completed successfully!');
   } finally {
     chrome.kill();
     try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch(e) {}

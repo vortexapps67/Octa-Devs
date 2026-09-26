@@ -769,7 +769,7 @@
       <form id="login-form" class="dark-form">
         <div class="form-group">
           <label class="form-label" for="admin-password">Passcode</label>
-          <input type="password" id="admin-password" class="form-input" placeholder="Enter admin password (admin00)..." required autofocus>
+          <input type="password" id="admin-password" class="form-input" placeholder="Enter admin password..." required autofocus>
         </div>
         <button type="submit" class="btn btn-coral" id="login-btn" style="width: 100%; padding: 13px;">
           <span>Enter Admin Studio</span> →
@@ -798,6 +798,13 @@
       </nav>
 
       <div class="header-actions">
+        <a href="https://github.com/octa-devs" target="_blank" rel="noopener" class="btn btn-light btn-sm" title="Octa Devs GitHub Organization">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+          <span>GitHub</span>
+        </a>
+        <a href="https://discord.gg/6t8GfTSRBN" target="_blank" rel="noopener" class="btn btn-light btn-sm" title="Octa Devs Discord">
+          <span>Discord</span>
+        </a>
         <a href="/" target="_blank" class="btn btn-light btn-sm">View Website ↗</a>
         <button id="logout-btn" class="btn btn-danger-pill btn-sm">Log Out</button>
       </div>
@@ -933,27 +940,36 @@
             <h2 class="view-title">Database & Integrations</h2>
             <p class="view-sub">Supabase cloud database status, schema migration, and Discord webhook integration.</p>
           </div>
-          <div style="display:flex; gap:10px;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-coral btn-sm" id="sync-supabase-btn">⚡ Sync with Supabase</button>
             <button class="btn btn-light btn-sm" id="test-discord-btn">Test Discord Webhook</button>
-            <button class="btn btn-coral btn-sm" id="copy-sql-btn">Copy Supabase SQL</button>
+            <button class="btn btn-light btn-sm" id="copy-sql-btn">Copy Supabase SQL</button>
           </div>
         </div>
 
         <div class="grid-2">
           <div class="cream-card">
-            <h3 style="font-size: 18px; margin-bottom: 12px;">Cloud Connection Status</h3>
-            <div style="display:grid; gap:14px; margin-top:16px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#faf9f6; border-radius:12px;">
-                <span style="font-weight:600; font-size:14px;">Supabase Cloud API</span>
+            <h3 style="font-size: 18px; margin-bottom: 12px;">Cloud Connection & Sync Status</h3>
+            <div style="display:grid; gap:12px; margin-top:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:#faf9f6; border-radius:12px;">
+                <span style="font-weight:600; font-size:14px;">Supabase Postgres Database</span>
                 <span id="sb-status-chip" class="beacon-badge" style="background:#e6f9f0; color:#10b981;">Connected</span>
               </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#faf9f6; border-radius:12px;">
-                <span style="font-weight:600; font-size:14px;">Discord Lead Webhook</span>
-                <span class="beacon-badge" style="background:#e6f9f0; color:#10b981;">Contacxt Bot Active</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:#faf9f6; border-radius:12px;">
+                <span style="font-weight:600; font-size:14px;">Team Members in Cloud</span>
+                <span id="sb-team-count-chip" class="beacon-badge dark">Loading...</span>
               </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#faf9f6; border-radius:12px;">
-                <span style="font-weight:600; font-size:14px;">Local Store Fallback</span>
-                <span class="beacon-badge" style="background:#f3f4f6; color:#4b5563;">Active & Synced</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:#faf9f6; border-radius:12px;">
+                <span style="font-weight:600; font-size:14px;">Portfolio Projects in Cloud</span>
+                <span id="sb-proj-count-chip" class="beacon-badge dark">Loading...</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:#faf9f6; border-radius:12px;">
+                <span style="font-weight:600; font-size:14px;">Launch Countdown Timer</span>
+                <span id="sb-cd-status-chip" class="beacon-badge" style="background:#e6f9f0; color:#10b981;">Active</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:#faf9f6; border-radius:12px;">
+                <span style="font-weight:600; font-size:14px;">Discord Lead Webhook</span>
+                <span id="sb-discord-chip" class="beacon-badge" style="background:#e6f9f0; color:#10b981;">Active & Ready</span>
               </div>
             </div>
           </div>
@@ -1729,7 +1745,54 @@
           document.getElementById('sql-box').textContent = sql;
         }
       } catch (e) {}
+
+      try {
+        const statsRes = await api('/api/admin/stats');
+        if (statsRes.success && statsRes.stats) {
+          const s = statsRes.stats;
+          const statusChip = document.getElementById('sb-status-chip');
+          if (s.supabaseConnected) {
+            statusChip.style.background = '#e6f9f0';
+            statusChip.style.color = '#10b981';
+            statusChip.textContent = 'Connected (Live Postgres)';
+          } else {
+            statusChip.style.background = '#fef2f2';
+            statusChip.style.color = '#ef4444';
+            statusChip.textContent = 'Disconnected';
+          }
+
+          document.getElementById('sb-team-count-chip').textContent = `${s.teamMembersCount} members synced`;
+          document.getElementById('sb-proj-count-chip').textContent = `${s.projectsCount} projects (${s.publishedProjectsCount} published)`;
+          document.getElementById('sb-cd-status-chip').textContent = s.countdownActive ? 'Active & Ticking' : 'Disabled';
+          document.getElementById('sb-discord-chip').textContent = s.discordWebhookConfigured ? 'Webhook Active' : 'Not Configured';
+        }
+      } catch (e) {
+        console.warn('Failed to load DB stats:', e);
+      }
     }
+
+    document.getElementById('sync-supabase-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('sync-supabase-btn');
+      btn.disabled = true;
+      btn.textContent = 'Syncing...';
+      try {
+        const res = await api('/api/admin/sync', { method: 'POST' });
+        if (res.success) {
+          showToast(`Supabase synced! (${res.count.team} members, ${res.count.projects} projects)`);
+          loadCountdown();
+          loadTeam();
+          loadProjects();
+          loadDatabaseTab();
+        } else {
+          showToast('Sync error: ' + (res.error || 'Unknown error'), 'error');
+        }
+      } catch (err) {
+        showToast('Sync failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '⚡ Sync with Supabase';
+      }
+    });
 
     document.getElementById('copy-sql-btn').addEventListener('click', () => {
       const sql = document.getElementById('sql-box').textContent;

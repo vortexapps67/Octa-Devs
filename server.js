@@ -181,6 +181,18 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // 5b. Admin Supabase Sync
+  if (pathname === '/api/admin/sync' && req.method === 'POST') {
+    if (!requireAuth(req, res)) return;
+    try {
+      const result = await db.syncWithSupabase();
+      sendJson(res, 200, result);
+    } catch (e) {
+      sendJson(res, 500, { success: false, error: e.message });
+    }
+    return;
+  }
+
   // 6. Public Launch Countdown
   if (pathname === '/api/countdown' && req.method === 'GET') {
     try {
