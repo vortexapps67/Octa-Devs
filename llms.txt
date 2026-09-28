@@ -1,0 +1,41 @@
+# Octa Devs
+
+> An app development studio founded by Aarav Sharma and Akshansh Sinha,
+> building mobile and web products end to end — from strategy and interface
+> design through launch. Building since 2026. Based in India.
+
+Octa Devs takes products from idea to store listing: native and cross-platform
+mobile apps, web platforms and dashboards, product design, and MVPs built to
+validate quickly and scale afterwards. Work is handled directly by the
+founders rather than routed through account layers.
+
+## Services
+
+- **Mobile App Development** — iOS and Android, React Native, App Store launch.
+- **Web App Development** — product platforms, dashboards, scalable systems.
+- **UI/UX Design** — product strategy, user flows, interface design.
+- **MVP Development** — rapid prototyping, validation, growth-ready foundations.
+
+## Pages
+
+- [Home](https://octadevs.fun/): Studio overview, services, team, and contact.
+- [Work](https://octadevs.fun/work): Project portfolio, including shipped and upcoming work.
+- [Blog](https://octadevs.fun/blog): Writing from the studio.
+- [Privacy Policy](https://octadevs.fun/privacy): How data is collected, processed, and protected.
+- [Terms of Service](https://octadevs.fun/terms): Terms governing the website and engineering services.
+
+## Contact
+
+- Email: hello@octadevs.fun
+- Discord: https://discord.gg/6t8GfTSRBN
+- GitHub: https://github.com/octa-devs
+
+New project enquiries go through the contact form on the home page, which
+reaches the team directly.
+
+## Notes for automated readers
+
+- Canonical URLs are extensionless; `/page.html` permanently redirects to `/page`.
+- `/admin` is a private console with no public content and is disallowed in robots.txt.
+- Team members and portfolio entries are served dynamically from `/api/team`
+  and `/api/projects`, so they may not appear in a static fetch of the HTML.

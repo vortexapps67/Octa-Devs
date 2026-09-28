@@ -1,0 +1,24 @@
+# robots.txt — https://octadevs.fun
+# Cloudflare Pages redirects /page.html to /page, so the canonical URLs are
+# extensionless. Those are the forms listed in the sitemap.
+
+User-agent: *
+Allow: /
+
+# Admin console — no public content, and nothing here should be indexed.
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /api/
+
+# Server-side source. functions/_middleware.js already returns 404 for these;
+# listing them keeps well-behaved crawlers from requesting them at all.
+Disallow: /lib/
+Disallow: /scripts/
+Disallow: /data/
+Disallow: /functions/
+Disallow: /uploads/
+
+# Search Console verification file — no content value.
+Disallow: /googleadf93267f7b41002.html
+
+Sitemap: https://octadevs.fun/sitemap.xml
