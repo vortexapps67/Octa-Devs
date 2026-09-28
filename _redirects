@@ -1,7 +1,7 @@
-# Cloudflare Pages deploys the repository root, so server-side source would
-# otherwise be downloadable from the live site (e.g. /lib/auth.js, which used
-# to contain the admin passcode fallback). Return 404 for everything that is
-# not part of the public site.
+# Secondary guard only. Cloudflare Pages resolves a matching static asset
+# BEFORE consulting this file, so these rules do NOT block files that exist in
+# the deployment — functions/_middleware.js is what actually refuses them.
+# These remain as a fallback for paths that would otherwise 404.
 #
 # Format: <from> <to> <status>
 /scripts/*            /404.html   404
