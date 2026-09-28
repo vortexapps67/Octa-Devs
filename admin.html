@@ -1966,7 +1966,7 @@
           if (socials.linkedin) chips.push(`<a href="${socials.linkedin}" target="_blank" class="social-chip">LinkedIn ↗</a>`);
           if (socials.twitter) chips.push(`<a href="${socials.twitter}" target="_blank" class="social-chip">X / Twitter ↗</a>`);
           if (socials.portfolio) chips.push(`<a href="${socials.portfolio}" target="_blank" class="social-chip portfolio">🔗 Portfolio ↗</a>`);
-          if (socials.email) chips.push(`<a href="mailto:${encodeURIComponent(socials.email)}" class="social-chip">✉️ ${escapeHtml(socials.email)}</a>`);
+          if (socials.email) chips.push(`<a href="mailto:${encodeURI(socials.email)}" class="social-chip">✉️ ${escapeHtml(socials.email)}</a>`);
 
           return `
             <div class="member-item-card">

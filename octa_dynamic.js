@@ -465,7 +465,7 @@
                 if (socials.email) {
                   const email = String(socials.email).trim();
                   emailHtml = `
-                    <a href="mailto:${encodeURIComponent(email)}" class="octa-email-chip" title="Email ${escapeHtml(email)}">
+                    <a href="mailto:${encodeURI(email)}" class="octa-email-chip" title="Email ${escapeHtml(email)}">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                         <path d="m22 7-10 6L2 7"></path>
