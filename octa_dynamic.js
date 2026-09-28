@@ -459,6 +459,22 @@
                   `;
                 }
 
+                // Email gets its own chip so it reads as a direct way to
+                // reach the person, not just another social link.
+                let emailHtml = '';
+                if (socials.email) {
+                  const email = String(socials.email).trim();
+                  emailHtml = `
+                    <a href="mailto:${encodeURIComponent(email)}" class="octa-email-chip" title="Email ${escapeHtml(email)}">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                        <path d="m22 7-10 6L2 7"></path>
+                      </svg>
+                      <span>Email</span>
+                    </a>
+                  `;
+                }
+
                 // Other socials
                 const otherLinks = [];
                 if (socials.github) {
@@ -483,6 +499,7 @@
                     ${m.bio ? `<p class="octa-member-bio">${escapeHtml(m.bio)}</p>` : ''}
                     <div class="octa-member-footer">
                       ${portfolioHtml}
+                      ${emailHtml}
                       ${instaHtml}
                       ${otherLinks.length ? `<div class="octa-social-others">${otherLinks.join(' · ')}</div>` : ''}
                     </div>
@@ -2041,6 +2058,27 @@
       color: #ffffff;
       transform: translateY(-1px);
       box-shadow: 0 4px 14px rgba(235, 77, 109, 0.35);
+    }
+    .octa-email-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: rgba(250, 247, 243, 0.85);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 9999px;
+      padding: 5px 12px;
+      font-family: "Archivo", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .octa-email-chip:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      transform: translateY(-1px);
     }
     .octa-social-others {
       font-size: 12px;

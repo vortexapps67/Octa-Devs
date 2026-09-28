@@ -1454,10 +1454,17 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="mem-portfolio">🔗 Portfolio / Personal Website</label>
-            <input type="url" id="mem-portfolio" class="form-input" placeholder="https://yourname.dev">
-            <p style="font-size:12px; color:var(--text-dark-dim); margin-top:7px;">Shown as a highlighted “Portfolio” link on the public studio page.</p>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="mem-email">✉️ Email Address</label>
+              <input type="email" id="mem-email" class="form-input" placeholder="aarav@octadevs.fun">
+              <p style="font-size:12px; color:var(--text-dark-dim); margin-top:7px;">Shown as a “Email” link on the public studio page.</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mem-portfolio">🔗 Portfolio / Personal Website</label>
+              <input type="url" id="mem-portfolio" class="form-input" placeholder="https://yourname.dev">
+              <p style="font-size:12px; color:var(--text-dark-dim); margin-top:7px;">Shown as a highlighted “Portfolio” link on the public studio page.</p>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -1959,6 +1966,7 @@
           if (socials.linkedin) chips.push(`<a href="${socials.linkedin}" target="_blank" class="social-chip">LinkedIn ↗</a>`);
           if (socials.twitter) chips.push(`<a href="${socials.twitter}" target="_blank" class="social-chip">X / Twitter ↗</a>`);
           if (socials.portfolio) chips.push(`<a href="${socials.portfolio}" target="_blank" class="social-chip portfolio">🔗 Portfolio ↗</a>`);
+          if (socials.email) chips.push(`<a href="mailto:${encodeURIComponent(socials.email)}" class="social-chip">✉️ ${escapeHtml(socials.email)}</a>`);
 
           return `
             <div class="member-item-card">
@@ -2026,6 +2034,7 @@
       document.getElementById('mem-linkedin').value = socials.linkedin || '';
       document.getElementById('mem-twitter').value = socials.twitter || '';
       document.getElementById('mem-portfolio').value = socials.portfolio || '';
+      document.getElementById('mem-email').value = socials.email || '';
 
       document.getElementById('member-modal').classList.add('open');
     }
@@ -2050,7 +2059,8 @@
           github: document.getElementById('mem-github').value.trim(),
           linkedin: document.getElementById('mem-linkedin').value.trim(),
           twitter: document.getElementById('mem-twitter').value.trim(),
-          portfolio: document.getElementById('mem-portfolio').value.trim()
+          portfolio: document.getElementById('mem-portfolio').value.trim(),
+          email: document.getElementById('mem-email').value.trim()
         }
       };
 
