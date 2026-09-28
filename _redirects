@@ -1,0 +1,16 @@
+# Cloudflare Pages deploys the repository root, so server-side source would
+# otherwise be downloadable from the live site (e.g. /lib/auth.js, which used
+# to contain the admin passcode fallback). Return 404 for everything that is
+# not part of the public site.
+#
+# Format: <from> <to> <status>
+/scripts/*            /404.html   404
+/lib/*                /404.html   404
+/data/*               /404.html   404
+/node_modules/*       /404.html   404
+/server.js            /404.html   404
+/package.json         /404.html   404
+/package-lock.json    /404.html   404
+/supabase_schema.sql  /404.html   404
+/.env                 /404.html   404
+/.env.*               /404.html   404

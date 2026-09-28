@@ -1,4 +1,6 @@
 const http = require('http');
+const { requireEnv } = require('./_env');
+const ADMIN_PASSWORD = requireEnv('ADMIN_PASSWORD');
 const fs = require('fs');
 const path = require('path');
 
@@ -46,9 +48,9 @@ async function runVerification() {
     }
   }
 
-  // 1. Check admin.html for admin00 in placeholder
+  // 1. Check admin.html does not leak the passcode in the placeholder
   const adminHtml = fs.readFileSync('admin.html', 'utf8');
-  assert(!adminHtml.includes('Enter admin password (admin00)...'), 'admin00 removed from admin password placeholder');
+  assert(!/Enter admin password \([^)]+\)/.test(adminHtml), 'passcode not shown in admin password placeholder');
   assert(adminHtml.includes('placeholder="Enter admin password..."'), 'clean placeholder "Enter admin password..." is present');
   assert(adminHtml.includes('https://github.com/octa-devs'), 'GitHub link present in admin header');
   assert(adminHtml.includes('https://discord.gg/6t8GfTSRBN'), 'Discord link present in admin header');
@@ -110,7 +112,7 @@ async function runVerification() {
   assert(aarav && aarav.socials && aarav.socials.instagram, `Team member Aarav has Instagram: ${aarav?.socials?.instagram}`);
 
   // 5c. Admin Authentication
-  const loginRes = await request({ host: 'localhost', port: 3000, path: '/api/admin/login', method: 'POST' }, { password: 'admin00' });
+  const loginRes = await request({ host: 'localhost', port: 3000, path: '/api/admin/login', method: 'POST' }, { password: ADMIN_PASSWORD });
   assert(loginRes.status === 200 && loginRes.body.token, 'POST /api/admin/login succeeds with passcode');
   const token = loginRes.body.token;
 

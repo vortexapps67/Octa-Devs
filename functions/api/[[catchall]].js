@@ -2,14 +2,13 @@
  * Cloudflare Pages Functions - Full API Backend for Octa Devs
  * Runs in Cloudflare Edge Serverless Environment (protected server environment)
  * Supports all admin and public endpoints with Supabase & Discord Webhooks.
+ *
+ * All credentials come from the Pages environment bindings (context.env) — never
+ * from source. Required vars: SUPABASE_URL, SUPABASE_SECRET_KEY, ADMIN_PASSWORD.
+ * Optional: DISCORD_WEBHOOK_URL, ADMIN_TOKEN_SECRET.
  */
 
-const SUPABASE_URL = 'https://bofgjrslnvtlvikdopxi.supabase.co';
-const SUPABASE_SECRET_KEY = typeof atob !== 'undefined' 
-  ? atob('c2Jfc2VjcmV0X1NBaUxJREFyMGhBZnRkd0RtSHo2a2dfR0JsYUpxd2Y=')
-  : '';
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1553366159435366517/urFQoeoyr_zm_m4RMCmI0QzWXJasEvWQeh1DOi5ew8p4iHc980Ay5MRWUXG_KDCYjqRv';
-const ADMIN_PASSCODE = 'admin00';
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 function corsHeaders() {
   return {
@@ -27,16 +26,27 @@ function jsonResponse(data, status = 200) {
   });
 }
 
-async function callSupabase(endpoint, options = {}) {
-  const url = `${SUPABASE_URL}/rest/v1/${endpoint}`;
+/** Reads a required environment binding, throwing a clear error when unset. */
+function requireEnv(env, name) {
+  const value = env && env[name];
+  if (!value) {
+    throw new Error(`Server misconfigured: ${name} is not set`);
+  }
+  return value;
+}
+
+async function callSupabase(env, endpoint, options = {}) {
+  const baseUrl = requireEnv(env, 'SUPABASE_URL').replace(/\/+$/, '');
+  const secretKey = requireEnv(env, 'SUPABASE_SECRET_KEY');
+
   const headers = {
-    'apikey': SUPABASE_SECRET_KEY,
-    'Authorization': `Bearer ${SUPABASE_SECRET_KEY}`,
+    'apikey': secretKey,
+    'Authorization': `Bearer ${secretKey}`,
     'Content-Type': 'application/json',
     ...(options.headers || {})
   };
 
-  const res = await fetch(url, {
+  const res = await fetch(`${baseUrl}/rest/v1/${endpoint}`, {
     method: options.method || 'GET',
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined
@@ -51,8 +61,75 @@ async function callSupabase(endpoint, options = {}) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Admin session tokens
+//
+// Tokens are stateless and HMAC-signed so edge isolates don't need shared
+// state: "<expiryMillis>.<hex hmac-sha256 of expiryMillis>".
+// ---------------------------------------------------------------------------
+
+function tokenSecret(env) {
+  return env.ADMIN_TOKEN_SECRET || requireEnv(env, 'ADMIN_PASSWORD');
+}
+
+async function hmacHex(secret, message) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(message));
+  return Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+/** Length-independent, timing-safe string comparison. */
+function safeEqual(a, b) {
+  const aStr = String(a == null ? '' : a);
+  const bStr = String(b == null ? '' : b);
+  let diff = aStr.length ^ bStr.length;
+  const max = Math.max(aStr.length, bStr.length);
+  for (let i = 0; i < max; i++) {
+    diff |= aStr.charCodeAt(i % (aStr.length || 1)) ^ bStr.charCodeAt(i % (bStr.length || 1));
+  }
+  return diff === 0;
+}
+
+async function createAdminToken(env) {
+  const expiry = String(Date.now() + SESSION_TTL_MS);
+  const signature = await hmacHex(tokenSecret(env), expiry);
+  return `${expiry}.${signature}`;
+}
+
+async function verifyAdminToken(env, token) {
+  if (!token) return false;
+  const dot = token.lastIndexOf('.');
+  if (dot < 1) return false;
+
+  const expiry = token.slice(0, dot);
+  const signature = token.slice(dot + 1);
+  if (!/^\d+$/.test(expiry)) return false;
+  if (Number(expiry) < Date.now()) return false;
+
+  const expected = await hmacHex(tokenSecret(env), expiry);
+  return safeEqual(signature, expected);
+}
+
+function extractToken(request) {
+  const auth = request.headers.get('Authorization') || '';
+  if (auth.startsWith('Bearer ')) return auth.slice(7).trim();
+
+  const cookie = request.headers.get('Cookie') || '';
+  const match = cookie.match(/octa_admin_token=([^;]+)/);
+  return match ? match[1].trim() : null;
+}
+
 export async function onRequest(context) {
-  const { request } = context;
+  const { request, env } = context;
   const method = request.method.toUpperCase();
   const url = new URL(request.url);
   const pathname = url.pathname;
@@ -78,29 +155,32 @@ export async function onRequest(context) {
   try {
     // 1. ADMIN AUTHENTICATION
     if (pathname === '/api/admin/login' && method === 'POST') {
-      const { password } = body;
-      if (password === ADMIN_PASSCODE) {
-        const token = 'octa_token_' + Date.now() + '_' + Math.random().toString(36).substring(2);
-        return jsonResponse({ success: true, token });
+      const adminPassword = requireEnv(env, 'ADMIN_PASSWORD');
+      if (safeEqual(body.password, adminPassword)) {
+        return jsonResponse({ success: true, token: await createAdminToken(env) });
       }
       return jsonResponse({ success: false, error: 'Invalid admin passcode' }, 401);
-    }
-
-    if (pathname === '/api/admin/verify' && method === 'GET') {
-      const auth = request.headers.get('Authorization') || '';
-      if (auth.startsWith('Bearer ')) {
-        return jsonResponse({ success: true, valid: true });
-      }
-      return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
     }
 
     if (pathname === '/api/admin/logout' && method === 'POST') {
       return jsonResponse({ success: true });
     }
 
+    // Every other /api/admin/* route requires a valid signed session token.
+    if (pathname.startsWith('/api/admin/')) {
+      const valid = await verifyAdminToken(env, extractToken(request));
+      if (!valid) {
+        return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
+      }
+    }
+
+    if (pathname === '/api/admin/verify' && method === 'GET') {
+      return jsonResponse({ success: true, valid: true });
+    }
+
     // 2. COUNTDOWN
     if (pathname === '/api/countdown' && method === 'GET') {
-      const rows = await callSupabase('launch_settings?select=*&limit=1');
+      const rows = await callSupabase(env, 'launch_settings?select=*&limit=1');
       const countdown = Array.isArray(rows) && rows[0] ? rows[0] : null;
       return jsonResponse({ success: true, countdown });
     }
@@ -113,7 +193,7 @@ export async function onRequest(context) {
         is_active: body.is_active !== false,
         updated_at: new Date().toISOString()
       };
-      const rows = await callSupabase('launch_settings?id=eq.launch_config', {
+      const rows = await callSupabase(env, 'launch_settings?id=eq.launch_config', {
         method: 'PATCH',
         headers: { 'Prefer': 'return=representation' },
         body: patchData
@@ -124,7 +204,7 @@ export async function onRequest(context) {
 
     // 3. TEAM MEMBERS
     if (pathname === '/api/team' && method === 'GET') {
-      const rows = await callSupabase('team_members?select=*&order=sort_order.asc,created_at.asc');
+      const rows = await callSupabase(env, 'team_members?select=*&order=sort_order.asc,created_at.asc');
       return jsonResponse({ success: true, team: Array.isArray(rows) ? rows : [] });
     }
 
@@ -139,7 +219,7 @@ export async function onRequest(context) {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
-      const rows = await callSupabase('team_members', {
+      const rows = await callSupabase(env, 'team_members', {
         method: 'POST',
         headers: { 'Prefer': 'return=representation' },
         body: memberData
@@ -159,7 +239,7 @@ export async function onRequest(context) {
         socials: body.socials || {},
         updated_at: new Date().toISOString()
       };
-      const rows = await callSupabase(`team_members?id=eq.${encodeURIComponent(id)}`, {
+      const rows = await callSupabase(env, `team_members?id=eq.${encodeURIComponent(id)}`, {
         method: 'PATCH',
         headers: { 'Prefer': 'return=representation' },
         body: updateData
@@ -170,20 +250,18 @@ export async function onRequest(context) {
 
     if (pathname.startsWith('/api/admin/team/') && method === 'DELETE') {
       const id = decodeURIComponent(pathname.replace('/api/admin/team/', ''));
-      await callSupabase(`team_members?id=eq.${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      });
+      await callSupabase(env, `team_members?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' });
       return jsonResponse({ success: true });
     }
 
     // 4. PROJECTS
     if (pathname === '/api/projects' && method === 'GET') {
-      const rows = await callSupabase('projects?select=*&order=sort_order.asc,created_at.desc');
+      const rows = await callSupabase(env, 'projects?select=*&order=sort_order.asc,created_at.desc');
       return jsonResponse({ success: true, projects: Array.isArray(rows) ? rows : [] });
     }
 
     if (pathname === '/api/admin/projects' && method === 'POST') {
-      const projData = {
+      const projectData = {
         title: body.title,
         category: body.category || 'Mobile & Web',
         description: body.description || '',
@@ -194,12 +272,12 @@ export async function onRequest(context) {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
-      const rows = await callSupabase('projects', {
+      const rows = await callSupabase(env, 'projects', {
         method: 'POST',
         headers: { 'Prefer': 'return=representation' },
-        body: projData
+        body: projectData
       });
-      const project = Array.isArray(rows) && rows[0] ? rows[0] : projData;
+      const project = Array.isArray(rows) && rows[0] ? rows[0] : projectData;
       return jsonResponse({ success: true, project });
     }
 
@@ -215,7 +293,7 @@ export async function onRequest(context) {
         sort_order: parseInt(body.sort_order || 0, 10),
         updated_at: new Date().toISOString()
       };
-      const rows = await callSupabase(`projects?id=eq.${encodeURIComponent(id)}`, {
+      const rows = await callSupabase(env, `projects?id=eq.${encodeURIComponent(id)}`, {
         method: 'PATCH',
         headers: { 'Prefer': 'return=representation' },
         body: updateData
@@ -226,18 +304,16 @@ export async function onRequest(context) {
 
     if (pathname.startsWith('/api/admin/projects/') && method === 'DELETE') {
       const id = decodeURIComponent(pathname.replace('/api/admin/projects/', ''));
-      await callSupabase(`projects?id=eq.${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      });
+      await callSupabase(env, `projects?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' });
       return jsonResponse({ success: true });
     }
 
     // 5. STATS & SYNC
     if (pathname === '/api/admin/stats' && method === 'GET') {
       const [teamRows, projRows, cdRows] = await Promise.all([
-        callSupabase('team_members?select=id'),
-        callSupabase('projects?select=id,status'),
-        callSupabase('launch_settings?select=*&limit=1')
+        callSupabase(env, 'team_members?select=id'),
+        callSupabase(env, 'projects?select=id,status'),
+        callSupabase(env, 'launch_settings?select=*&limit=1')
       ]);
 
       const teamCount = Array.isArray(teamRows) ? teamRows.length : 0;
@@ -253,15 +329,15 @@ export async function onRequest(context) {
           projectsCount: projCount,
           publishedProjectsCount: pubCount,
           countdownActive: cdActive,
-          discordWebhookConfigured: true
+          discordWebhookConfigured: Boolean(env.DISCORD_WEBHOOK_URL)
         }
       });
     }
 
     if (pathname === '/api/admin/sync' && method === 'POST') {
       const [teamRows, projRows] = await Promise.all([
-        callSupabase('team_members?select=id'),
-        callSupabase('projects?select=id')
+        callSupabase(env, 'team_members?select=id'),
+        callSupabase(env, 'projects?select=id')
       ]);
 
       return jsonResponse({
@@ -275,6 +351,7 @@ export async function onRequest(context) {
 
     // 6. CONTACT DISCORD WEBHOOK
     if (pathname === '/api/contact' && method === 'POST') {
+      const webhookUrl = requireEnv(env, 'DISCORD_WEBHOOK_URL');
       const { name, email, project } = body;
       const discordPayload = {
         username: 'Octa Devs Portal',
@@ -291,7 +368,7 @@ export async function onRequest(context) {
         }]
       };
 
-      await fetch(DISCORD_WEBHOOK_URL, {
+      await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(discordPayload)

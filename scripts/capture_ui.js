@@ -1,3 +1,5 @@
+const { requireEnv } = require('./_env');
+const ADMIN_PASSWORD = requireEnv('ADMIN_PASSWORD');
 const { spawn } = require('child_process');
 const http = require('http');
 const fs = require('fs');
@@ -83,7 +85,7 @@ async function capture() {
       mobile: false
     });
 
-    // 1. Admin Login (Check admin00 is gone)
+    // 1. Admin Login
     console.log('1. Navigating to http://localhost:3000/admin...');
     await send('Page.navigate', { url: 'http://localhost:3000/admin' });
     await sleep(2000);
@@ -94,7 +96,7 @@ async function capture() {
     // 2. Login to Admin
     await send('Runtime.evaluate', {
       expression: `
-        document.getElementById('admin-password').value = 'admin00';
+        document.getElementById('admin-password').value = ${JSON.stringify(ADMIN_PASSWORD)};
         document.getElementById('login-form').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
       `
     });

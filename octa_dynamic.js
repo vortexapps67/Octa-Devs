@@ -14,9 +14,87 @@
   const GITHUB_URL = 'https://github.com/octa-devs';
   const DISCORD_URL = 'https://discord.gg/6t8GfTSRBN';
   const CONTACT_EMAIL = 'hello@octadevs.fun';
-  const SUPABASE_URL = 'https://bofgjrslnvtlvikdopxi.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_DclQThQDyYmDcr6ThGmHoQ_s4s9qSI6';
-  const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1553366159435366517/urFQoeoyr_zm_m4RMCmI0QzWXJasEvWQeh1DOi5ew8p4iHc980Ay5MRWUXG_KDCYjqRv';
+
+  // All data access goes through the /api/* backend, which holds the Supabase
+  // and Discord credentials server-side. Nothing secret belongs in this file.
+
+  // ================= MOTION HELPERS =================
+
+  function prefersReducedMotion() {
+    return window.matchMedia
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false;
+  }
+
+  // Elements matching these selectors get revealed as they scroll into view.
+  const REVEAL_TARGETS = [
+    ['.octa-project-card', 'lift'],
+    ['.octa-member-card', 'lift'],
+    ['.octa-cd-box', 'fade'],
+    ['.octa-works-cta', 'lift']
+  ];
+
+  let revealObserver = null;
+  let revealScanQueued = false;
+
+  /**
+   * Tags any not-yet-tracked reveal targets and hands them to the observer.
+   * Cards are rendered asynchronously, so this runs again whenever the DOM
+   * changes rather than only once at startup.
+   */
+  function scanRevealTargets() {
+    if (!revealObserver) return;
+
+    REVEAL_TARGETS.forEach(([selector, variant]) => {
+      const nodes = document.querySelectorAll(selector + ':not([data-octa-reveal])');
+      nodes.forEach((el, i) => {
+        el.setAttribute('data-octa-reveal', variant);
+        // Stagger siblings, but cap the delay so a long list never feels slow.
+        el.style.setProperty('--octa-reveal-delay', Math.min(i * 70, 420) + 'ms');
+        revealObserver.observe(el);
+      });
+    });
+  }
+
+  // Debounced via setTimeout rather than requestAnimationFrame: rAF is frozen
+  // in background tabs, which would leave freshly rendered cards untagged
+  // until the tab was focused.
+  function queueRevealScan() {
+    if (revealScanQueued) return;
+    revealScanQueued = true;
+    setTimeout(() => {
+      revealScanQueued = false;
+      scanRevealTargets();
+    }, 60);
+  }
+
+  function initScrollReveal() {
+    // Without IntersectionObserver, skip tagging entirely so nothing is left
+    // stuck at opacity 0.
+    if (!('IntersectionObserver' in window) || prefersReducedMotion()) return;
+
+    revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('octa-revealed');
+        revealObserver.unobserve(entry.target);
+      });
+    }, {
+      // Trigger slightly before the element is fully on screen, and ignore the
+      // bottom edge so elements never reveal while scrolling upward past them.
+      rootMargin: '0px 0px -12% 0px',
+      threshold: 0.08
+    });
+
+    scanRevealTargets();
+
+    if ('MutationObserver' in window) {
+      new MutationObserver(queueRevealScan).observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
+  }
 
   // 1. ================= CONTACT FORM DISCORD INTEGRATION =================
   function initContactForm() {
@@ -53,7 +131,6 @@
 
       let delivered = false;
 
-      // 1. Attempt Node.js backend if active
       try {
         const response = await fetch('/api/contact', {
           method: 'POST',
@@ -66,36 +143,7 @@
           if (data.success) delivered = true;
         }
       } catch (err) {
-        console.warn('Backend server contact endpoint unavailable, attempting direct Discord webhook:', err);
-      }
-
-      // 2. Direct Discord Webhook Fallback (for static hosting on Cloudflare Pages)
-      if (!delivered) {
-        try {
-          const discordRes = await fetch(DISCORD_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              username: 'Octa Devs Portal',
-              avatar_url: 'https://octadevs.fun/octa_favicon.jpg',
-              embeds: [{
-                title: '⚡ New Project Inquiry',
-                color: 15420781,
-                fields: [
-                  { name: 'Client Name', value: name, inline: true },
-                  { name: 'Email', value: email, inline: true },
-                  { name: 'Project Details', value: project || 'No description provided.' }
-                ],
-                timestamp: new Date().toISOString()
-              }]
-            })
-          });
-          if (discordRes.ok || discordRes.status === 204) {
-            delivered = true;
-          }
-        } catch (e) {
-          console.error('Direct Discord delivery failed:', e);
-        }
+        console.warn('Contact endpoint unavailable:', err);
       }
 
       if (delivered) {
@@ -129,21 +177,8 @@
             if (data.success && data.countdown) countdown = data.countdown;
           }
         }
-      } catch (e) {}
-
-      // Supabase direct REST fallback
-      if (!countdown) {
-        try {
-          const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/launch_settings?select=*&limit=1`, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-          });
-          if (sbRes.ok) {
-            const rows = await sbRes.json();
-            if (rows && rows[0]) countdown = rows[0];
-          }
-        } catch (sbErr) {
-          console.warn('Supabase countdown fetch error:', sbErr);
-        }
+      } catch (e) {
+        console.warn('Countdown endpoint unavailable:', e);
       }
 
       if (!countdown || countdown.is_active === false) return;
@@ -249,6 +284,21 @@
     `;
   }
 
+  /**
+   * Writes a countdown digit, animating only when the value actually changed
+   * so the roll reads as a real tick instead of a constant flicker.
+   */
+  function setCountdownDigit(el, value) {
+    if (el.textContent === value) return;
+    el.textContent = value;
+    if (prefersReducedMotion()) return;
+
+    el.classList.remove('octa-tick');
+    // Force a reflow so the animation restarts on consecutive ticks.
+    void el.offsetWidth;
+    el.classList.add('octa-tick');
+  }
+
   function startCountdownLoop(targetDate) {
     if (countdownTimerId) clearInterval(countdownTimerId);
 
@@ -264,10 +314,9 @@
       if (!dEls.length) return;
 
       if (diff <= 0) {
-        dEls.forEach(el => el.textContent = '00');
-        hEls.forEach(el => el.textContent = '00');
-        mEls.forEach(el => el.textContent = '00');
-        sEls.forEach(el => el.textContent = '00');
+        [dEls, hEls, mEls, sEls].forEach(list =>
+          list.forEach(el => setCountdownDigit(el, '00'))
+        );
         return;
       }
 
@@ -281,10 +330,16 @@
       const mStr = String(mins).padStart(2, '0');
       const sStr = String(secs).padStart(2, '0');
 
-      dEls.forEach(el => el.textContent = dStr);
-      hEls.forEach(el => el.textContent = hStr);
-      mEls.forEach(el => el.textContent = mStr);
-      sEls.forEach(el => el.textContent = sStr);
+      dEls.forEach(el => setCountdownDigit(el, dStr));
+      hEls.forEach(el => setCountdownDigit(el, hStr));
+      mEls.forEach(el => setCountdownDigit(el, mStr));
+      sEls.forEach(el => setCountdownDigit(el, sStr));
+
+      // Highlight the seconds cell so the widget reads as live at a glance.
+      sEls.forEach(el => {
+        const cell = el.closest('.octa-cd-item');
+        if (cell) cell.classList.add('octa-cd-item-live');
+      });
     }
 
     tick();
@@ -304,21 +359,8 @@
             if (data.success && Array.isArray(data.team) && data.team.length > 0) team = data.team;
           }
         }
-      } catch (e) {}
-
-      // Supabase direct REST fallback
-      if (!team) {
-        try {
-          const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/team_members?select=*&order=sort_order.asc,created_at.asc`, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-          });
-          if (sbRes.ok) {
-            const rows = await sbRes.json();
-            if (Array.isArray(rows) && rows.length > 0) team = rows;
-          }
-        } catch (sbErr) {
-          console.warn('Supabase team fetch error:', sbErr);
-        }
+      } catch (e) {
+        console.warn('Team endpoint unavailable:', e);
       }
 
       if (!Array.isArray(team) || team.length === 0) return;
@@ -472,21 +514,8 @@
             if (data.success && Array.isArray(data.projects)) projects = data.projects;
           }
         }
-      } catch (e) {}
-
-      // Supabase direct REST fallback
-      if (!projects) {
-        try {
-          const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/projects?select=*&order=sort_order.asc,created_at.desc`, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-          });
-          if (sbRes.ok) {
-            const rows = await sbRes.json();
-            if (Array.isArray(rows)) projects = rows;
-          }
-        } catch (sbErr) {
-          console.warn('Supabase projects fetch error:', sbErr);
-        }
+      } catch (e) {
+        console.warn('Projects endpoint unavailable:', e);
       }
 
       if (!Array.isArray(projects)) return;
@@ -2943,6 +2972,152 @@
         transition: none;
       }
     }
+
+    /* ================= MOTION SYSTEM =================
+       Shared easing/duration tokens so every dynamic element moves with the
+       same character, plus scroll-driven reveals and countdown digit rolls. */
+    :root {
+      --octa-ease: cubic-bezier(0.16, 1, 0.3, 1);      /* decelerate, default */
+      --octa-ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1); /* slight overshoot */
+      --octa-dur-fast: 200ms;
+      --octa-dur: 440ms;
+      --octa-dur-slow: 720ms;
+    }
+
+    /* --- Scroll reveal ---
+       Elements start offset and settle once they scroll into view, staggered
+       by --octa-reveal-delay. Falls back to visible when JS never runs. */
+    [data-octa-reveal] {
+      opacity: 0;
+      transform: translate3d(0, 24px, 0);
+      transition: opacity var(--octa-dur-slow) var(--octa-ease),
+                  transform var(--octa-dur-slow) var(--octa-ease);
+      transition-delay: var(--octa-reveal-delay, 0ms);
+      will-change: opacity, transform;
+    }
+    [data-octa-reveal="lift"] {
+      transform: translate3d(0, 28px, 0) scale(0.975);
+    }
+    [data-octa-reveal="fade"] {
+      transform: none;
+    }
+    [data-octa-reveal].octa-revealed {
+      opacity: 1;
+      transform: none;
+      will-change: auto;
+    }
+
+    /* Project cards reveal on scroll rather than on a blind timer, so cards
+       below the fold still animate when the visitor actually reaches them. */
+    .octa-project-card[data-octa-reveal] {
+      animation: none;
+    }
+
+    /* --- Card hover: spring lift + light sweep --- */
+    .octa-project-card {
+      transition: transform var(--octa-dur) var(--octa-ease-spring),
+                  box-shadow var(--octa-dur) var(--octa-ease),
+                  border-color var(--octa-dur-fast) ease;
+    }
+    .octa-project-card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 45%;
+      height: 100%;
+      pointer-events: none;
+      background: linear-gradient(
+        100deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.07) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: skewX(-18deg);
+      opacity: 0;
+      transition: left var(--octa-dur-slow) var(--octa-ease), opacity 250ms ease;
+      z-index: 3;
+    }
+    .octa-project-card:hover::after,
+    .octa-project-card:focus-within::after {
+      left: 115%;
+      opacity: 1;
+    }
+    .octa-project-card:hover {
+      transform: translate3d(0, -7px, 0);
+    }
+    .octa-project-card:active {
+      transform: translate3d(0, -2px, 0) scale(0.994);
+      transition-duration: var(--octa-dur-fast);
+    }
+
+    .octa-member-card {
+      transition: transform var(--octa-dur) var(--octa-ease-spring),
+                  box-shadow var(--octa-dur) var(--octa-ease),
+                  border-color var(--octa-dur-fast) ease;
+    }
+
+    /* --- Countdown digits ---
+       Each digit rolls up as it changes, so the timer reads as live without
+       the whole widget repainting. */
+    .octa-cd-num {
+      display: inline-block;
+      font-variant-numeric: tabular-nums;
+      transform-origin: 50% 60%;
+    }
+    .octa-cd-num.octa-tick {
+      animation: octaDigitRoll 560ms var(--octa-ease-spring);
+    }
+    @keyframes octaDigitRoll {
+      0%   { opacity: 0; transform: translate3d(0, -42%, 0) scale(0.88); filter: blur(2px); }
+      55%  { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: none; filter: blur(0); }
+    }
+    .octa-cd-item {
+      transition: border-color var(--octa-dur) var(--octa-ease),
+                  background var(--octa-dur) var(--octa-ease);
+    }
+    .octa-cd-item.octa-cd-item-live {
+      border-color: rgba(235, 77, 109, 0.3);
+      background: rgba(235, 77, 109, 0.06);
+    }
+    .octa-cd-sep {
+      animation: octaSepBlink 2s var(--octa-ease) infinite;
+    }
+    @keyframes octaSepBlink {
+      0%, 100% { opacity: 0.85; }
+      50%      { opacity: 0.32; }
+    }
+
+    /* Printing never scrolls, so reveal targets must not stay hidden. */
+    @media print {
+      [data-octa-reveal] {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+    }
+
+    /* --- Reduced motion: keep the layout, drop the movement --- */
+    @media (prefers-reduced-motion: reduce) {
+      [data-octa-reveal] {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+      .octa-project-card::after,
+      .octa-cd-sep {
+        animation: none;
+        transition: none;
+      }
+      .octa-project-card:hover,
+      .octa-project-card:active {
+        transform: none;
+      }
+      .octa-cd-num.octa-tick {
+        animation: none;
+      }
+    }
   `;
 
   function injectStyles() {
@@ -2964,6 +3139,7 @@
     initSupportModal();
     initContactSocialBadges();
     initSupportBubble();
+    initScrollReveal();
   }
 
   if (document.readyState === 'loading') {

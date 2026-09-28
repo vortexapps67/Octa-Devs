@@ -1,4 +1,6 @@
 const http = require('http');
+const { requireEnv } = require('./_env');
+const ADMIN_PASSWORD = requireEnv('ADMIN_PASSWORD');
 
 async function runTests() {
   console.log('=== STARTING SYSTEM INTEGRATION TESTS ===\n');
@@ -43,11 +45,11 @@ async function runTests() {
   if (badLogin.status !== 401) throw new Error('Expected 401 for wrong password');
 
   // Test 4: Admin Login with correct password
-  console.log('\nTest 4: POST /api/admin/login (Correct Password admin00)');
+  console.log('\nTest 4: POST /api/admin/login (correct password from ADMIN_PASSWORD)');
   const goodLogin = await request('/api/admin/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: 'admin00' })
+    body: JSON.stringify({ password: ADMIN_PASSWORD })
   });
   console.log('Status:', goodLogin.status, 'Token received:', !!goodLogin.data?.token);
   if (!goodLogin.ok || !goodLogin.data?.token) throw new Error('Admin login failed');

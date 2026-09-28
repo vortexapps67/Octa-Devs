@@ -45,8 +45,7 @@ const MIME_TYPES = {
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.ttf': 'font/ttf',
-  '.ico': 'image/x-icon',
-  '.sql': 'text/plain; charset=utf-8'
+  '.ico': 'image/x-icon'
 };
 
 function sendJson(res, statusCode, data) {
@@ -88,6 +87,40 @@ function parseBody(req) {
       }
     });
   });
+}
+
+// Server-side directories and files that must never be downloadable. Anything
+// starting with a dot is blocked too, which covers .env, .git and friends.
+const PRIVATE_DIRS = new Set([
+  'node_modules', 'scripts', 'lib', 'functions', 'data'
+]);
+const PRIVATE_FILES = new Set([
+  'server.js', 'package.json', 'package-lock.json', 'supabase_schema.sql'
+]);
+
+/**
+ * Decides whether an absolute, fully-resolved path may be sent to a client.
+ * Takes the resolved path rather than the request path so that URL rewrites
+ * cannot smuggle a private file through under a public-looking name.
+ */
+function isPubliclyServable(absPath) {
+  const resolved = path.resolve(absPath);
+
+  // Must live inside the project directory.
+  if (resolved !== __dirname && !resolved.startsWith(__dirname + path.sep)) return false;
+
+  const segments = path.relative(__dirname, resolved).split(path.sep).filter(Boolean);
+  if (!segments.length) return false;
+
+  // Any dotfile or dot-directory, at any depth (.env, .git/config, ...).
+  if (segments.some(s => s.startsWith('.'))) return false;
+
+  if (PRIVATE_DIRS.has(segments[0].toLowerCase())) return false;
+  if (segments.length === 1 && PRIVATE_FILES.has(segments[0].toLowerCase())) return false;
+
+  // Only formats the site actually needs; .env, .sql, .log etc. never match.
+  const ext = path.extname(segments[segments.length - 1]).toLowerCase();
+  return Object.prototype.hasOwnProperty.call(MIME_TYPES, ext);
 }
 
 function requireAuth(req, res) {
@@ -389,6 +422,17 @@ const server = http.createServer(async (req, res) => {
     if (fs.existsSync(stripped)) {
       filePath = stripped;
     }
+  }
+
+  // Gate on the FINAL resolved path, after every rewrite above. Checking the
+  // request path instead would miss rewrites that reach a private file by
+  // another name (e.g. /admin/lib/auth.js stripping down to /lib/auth.js).
+  // Without this the whole project directory is downloadable — including .env,
+  // which holds the Supabase secret key and the admin password.
+  if (!isPubliclyServable(filePath)) {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not Found');
+    return;
   }
 
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
