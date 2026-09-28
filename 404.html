@@ -1,46 +1,564 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex">
-  <title>Not Found · Octa Devs</title>
-  <link rel="icon" href="/octa_favicon.jpg">
-  <style>
-    :root { color-scheme: dark; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 18px;
-      background: #0d0d10;
-      color: #faf7f3;
-      font-family: "Inter", system-ui, -apple-system, sans-serif;
-      text-align: center;
-      padding: 24px;
-      box-sizing: border-box;
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>404 — Page Not Found · Octa Devs</title>
+<meta name="description" content="That page doesn't exist. Head back to Octa Devs.">
+<link rel="icon" href="/octa_favicon.jpg">
+<!-- Set synchronously, before first paint, so the entrance can hide content
+     without ever risking a permanently blank page when JS is unavailable. -->
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  /* ---------------------------------------------------------------
+     Octa Devs 404
+     Brand: coral #eb4d6d on near-black, Archivo display / Inter body.
+     The octagon motif is the "Octa" in Octa Devs — eight sides, two
+     counter-rotating rings.
+     --------------------------------------------------------------- */
+  :root {
+    --bg:        #0a0a0c;
+    --surface:   #111114;
+    --ink:       #faf7f3;
+    --muted:     rgba(250, 247, 243, 0.56);
+    --accent:    #eb4d6d;
+    --accent-2:  #7c5cff;
+    --line:      rgba(255, 255, 255, 0.10);
+
+    --ease:        cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+
+    --display: "Archivo", "Archivo Expanded", ui-sans-serif, system-ui,
+               "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --body:    "Inter", ui-sans-serif, system-ui, "Segoe UI", Roboto,
+               Helvetica, Arial, sans-serif;
+    --mono:    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    display: grid;
+    place-items: center;
+    padding: 32px 16px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ============================ BACKDROP ============================ */
+
+  /* Two drifting colour fields. Large, heavily blurred, very low opacity —
+     they read as depth rather than as shapes. */
+  .aura {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    animation: auraIn 1.6s var(--ease) 0.1s forwards;
+  }
+  .aura-1 {
+    width: 60vmax; height: 60vmax;
+    top: -22vmax; left: -18vmax;
+    background: radial-gradient(circle, rgba(235, 77, 109, 0.30), transparent 68%);
+    animation: auraIn 1.6s var(--ease) 0.1s forwards, drift1 22s ease-in-out 1.6s infinite;
+  }
+  .aura-2 {
+    width: 52vmax; height: 52vmax;
+    bottom: -20vmax; right: -16vmax;
+    background: radial-gradient(circle, rgba(124, 92, 255, 0.24), transparent 68%);
+    animation: auraIn 1.6s var(--ease) 0.25s forwards, drift2 26s ease-in-out 1.85s infinite;
+  }
+  @keyframes auraIn { to { opacity: 1; } }
+  @keyframes drift1 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50%      { transform: translate3d(6vmax, 4vmax, 0) scale(1.12); }
+  }
+  @keyframes drift2 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1.06); }
+    50%      { transform: translate3d(-5vmax, -5vmax, 0) scale(1); }
+  }
+
+  /* Faint grid, masked to a soft vignette so edges never look cropped. */
+  .grid {
+    position: fixed;
+    inset: -2px;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 78%);
+            mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 78%);
+    opacity: 0;
+    animation: gridIn 2s var(--ease) 0.5s forwards;
+  }
+  @keyframes gridIn { to { opacity: 1; } }
+
+  /* Drifting dust. Positions/durations are assigned in JS. */
+  .dust {
+    position: fixed;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    animation: rise linear infinite;
+  }
+  @keyframes rise {
+    0%   { opacity: 0;    transform: translate3d(0, 0, 0) scale(0.5); }
+    12%  { opacity: 0.55; }
+    88%  { opacity: 0.35; }
+    100% { opacity: 0;    transform: translate3d(var(--dx, 14px), -105vh, 0) scale(1.1); }
+  }
+
+  /* ============================= STAGE ============================= */
+
+  .stage {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 640px;
+    width: 100%;
+  }
+
+  /* Rings sit behind the numerals, centred on them. */
+  .rings {
+    position: absolute;
+    top: 46%;
+    left: 50%;
+    width: min(74vmin, 440px);
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    pointer-events: none;
+    z-index: -1;
+    /* Parallax offset, written by JS on pointer move. */
+    transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
+    transition: transform 500ms var(--ease);
+  }
+  .rings svg { width: 100%; height: 100%; overflow: visible; }
+
+  .ring-outer,
+  .ring-inner,
+  .ring-dash { transform-origin: 50% 50%; transform-box: fill-box; }
+
+  .ring-outer {
+    stroke: rgba(235, 77, 109, 0.32);
+    animation: spin 34s linear infinite;
+  }
+  .ring-inner {
+    stroke: rgba(255, 255, 255, 0.11);
+    animation: spin 24s linear infinite reverse;
+  }
+  .ring-dash {
+    stroke: rgba(235, 77, 109, 0.85);
+    stroke-dasharray: 10 300;
+    filter: drop-shadow(0 0 7px rgba(235, 77, 109, 0.85));
+    animation: spin 9s linear infinite;
+  }
+  @keyframes spin { to { rotate: 360deg; } }
+
+  /* Rings draw themselves in on load — again, only when JS is there to
+     un-hide them. */
+  .js .ring-outer, .js .ring-inner {
+    stroke-dasharray: 420;
+    stroke-dashoffset: 420;
+    animation-play-state: paused;
+  }
+  .ready .ring-outer,
+  .ready .ring-inner {
+    animation-play-state: running;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1.9s var(--ease) 0.25s;
+  }
+
+  /* ----- staggered entrance for every text row -----
+     Content is visible by default and only hidden once the `js` class proves
+     a script can reveal it again. Without this, any failure to run the
+     entrance (no JS, or a frozen rAF in a background tab) leaves the whole
+     page blank. */
+  .row {
+    transition: opacity 0.85s var(--ease), transform 0.85s var(--ease);
+    transition-delay: var(--d, 0ms);
+  }
+  .js .row {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  .ready .row { opacity: 1; transform: none; }
+
+  /* ----- status badge ----- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 16px;
+    border: 1px solid rgba(235, 77, 109, 0.3);
+    border-radius: 999px;
+    background: rgba(235, 77, 109, 0.07);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .beacon {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    animation: beacon 2s ease-in-out infinite;
+  }
+  @keyframes beacon {
+    0%, 100% { opacity: 0.55; transform: scale(0.85); }
+    50%      { opacity: 1;    transform: scale(1.3); }
+  }
+
+  /* ----- the numerals ----- */
+  .code {
+    position: relative;
+    margin: 22px 0 6px;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(104px, 27vw, 230px);
+    line-height: 0.86;
+    letter-spacing: -0.045em;
+    background: linear-gradient(175deg, #fff 8%, #d8d2cb 48%, #8d8781 100%);
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    user-select: none;
+  }
+
+  /* Chromatic split, fired in short bursts rather than looping constantly —
+     a permanent glitch reads as a broken page, not a designed one. */
+  .code::before,
+  .code::after {
+    content: "404";
+    position: absolute;
+    inset: 0;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .code::before { color: var(--accent);   }
+  .code::after  { color: var(--accent-2); }
+  .ready .code::before { animation: glitchA 7s steps(1, end) 2.4s infinite; }
+  .ready .code::after  { animation: glitchB 7s steps(1, end) 2.4s infinite; }
+
+  @keyframes glitchA {
+    0%, 92%, 100%  { opacity: 0; transform: none; clip-path: none; }
+    93%            { opacity: 0.85; transform: translate3d(-5px, 2px, 0);
+                     clip-path: inset(12% 0 55% 0); }
+    95%            { opacity: 0.7;  transform: translate3d(4px, -2px, 0);
+                     clip-path: inset(62% 0 14% 0); }
+    97%            { opacity: 0.8;  transform: translate3d(-3px, 0, 0);
+                     clip-path: inset(38% 0 40% 0); }
+  }
+  @keyframes glitchB {
+    0%, 92%, 100%  { opacity: 0; transform: none; clip-path: none; }
+    93%            { opacity: 0.7;  transform: translate3d(5px, -2px, 0);
+                     clip-path: inset(28% 0 46% 0); }
+    95%            { opacity: 0.55; transform: translate3d(-4px, 2px, 0);
+                     clip-path: inset(8% 0 72% 0); }
+    97%            { opacity: 0.65; transform: translate3d(3px, 0, 0);
+                     clip-path: inset(56% 0 22% 0); }
+  }
+
+  /* A light bar sweeping down the numerals. */
+  .scan {
+    position: absolute;
+    left: -6%;
+    width: 112%;
+    height: 22%;
+    top: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(255, 255, 255, 0.10) 45%,
+      rgba(235, 77, 109, 0.16) 55%,
+      transparent
+    );
+    mix-blend-mode: screen;
+    opacity: 0;
+    pointer-events: none;
+    /* Fade the ends so the bar never reads as a hard-edged rectangle. */
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 20%, #000 80%, transparent);
+            mask-image: linear-gradient(to right, transparent, #000 20%, #000 80%, transparent);
+  }
+  .ready .scan { animation: scan 5.5s var(--ease) 2s infinite; }
+  @keyframes scan {
+    0%        { opacity: 0;   transform: translateY(-40%); }
+    8%        { opacity: 0.9; }
+    46%       { opacity: 0.9; }
+    60%, 100% { opacity: 0;   transform: translateY(420%); }
+  }
+
+  h1 {
+    margin: 0 0 12px;
+    font-family: var(--display);
+    font-size: clamp(21px, 4.4vw, 30px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .lede {
+    margin: 0 0 30px;
+    max-width: 46ch;
+    color: var(--muted);
+    font-size: clamp(14.5px, 2.4vw, 16.5px);
+    line-height: 1.65;
+    /* Avoids a single orphaned word on the last line. */
+    text-wrap: pretty;
+  }
+
+  /* ----- actions ----- */
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .btn {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 14px 26px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-family: var(--body);
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.4s var(--ease-spring),
+                box-shadow 0.4s var(--ease),
+                border-color 0.2s ease,
+                background 0.2s ease;
+  }
+  .btn:hover  { transform: translate3d(0, -3px, 0); }
+  .btn:active { transform: translate3d(0, -1px, 0) scale(0.985); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 10px 28px rgba(235, 77, 109, 0.32);
+  }
+  .btn-primary:hover { box-shadow: 0 18px 40px rgba(235, 77, 109, 0.42); }
+
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--line);
+    color: var(--ink);
+  }
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Light sweep on hover, matching the project cards on the main site. */
+  .btn::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -60%;
+    width: 45%; height: 100%;
+    background: linear-gradient(100deg, transparent,
+                rgba(255, 255, 255, 0.28) 50%, transparent);
+    transform: skewX(-18deg);
+    opacity: 0;
+    transition: left 0.75s var(--ease), opacity 0.25s ease;
+  }
+  .btn:hover::after { left: 115%; opacity: 1; }
+
+  .btn .arrow { transition: transform 0.35s var(--ease-spring); }
+  .btn:hover .arrow { transform: translateX(4px); }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 999px;
+  }
+
+  /* ----- footer note ----- */
+  .note {
+    margin-top: 34px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(250, 247, 243, 0.3);
+  }
+  .note a { color: rgba(250, 247, 243, 0.55); text-decoration: none; }
+  .note a:hover { color: var(--accent); }
+
+  @media (max-width: 480px) {
+    .rings { width: 86vmin; }
+    .btn   { padding: 13px 22px; }
+  }
+
+  /* Short/landscape phones: keep everything on one screen. */
+  @media (max-height: 560px) {
+    .code { font-size: clamp(76px, 17vh, 120px); margin: 12px 0 4px; }
+    .lede { margin-bottom: 20px; }
+    .note { margin-top: 20px; }
+  }
+
+  /* ----- reduced motion: keep the composition, drop the movement ----- */
+  @media (prefers-reduced-motion: reduce) {
+    .aura, .grid, .dust, .beacon,
+    .ring-outer, .ring-inner, .ring-dash,
+    .code::before, .code::after, .scan {
+      animation: none !important;
     }
-    h1 { font-size: 64px; margin: 0; letter-spacing: -0.03em; }
-    p { margin: 0; color: rgba(250, 247, 243, 0.6); }
-    a {
-      margin-top: 8px;
-      padding: 12px 24px;
-      border-radius: 999px;
-      border: 1px solid rgba(235, 77, 109, 0.4);
-      color: #eb4d6d;
-      text-decoration: none;
-      font-weight: 600;
-      transition: background 0.2s ease;
-    }
-    a:hover { background: rgba(235, 77, 109, 0.1); }
-  </style>
+    .aura, .grid { opacity: 1; }
+    .dust { display: none; }
+    .ring-outer, .ring-inner { stroke-dashoffset: 0; transition: none; }
+    .row { opacity: 1; transform: none; transition: none; }
+    .rings { transition: none; }
+    .btn { transition: background 0.2s ease, border-color 0.2s ease; }
+    .btn:hover, .btn:active { transform: none; }
+    .btn::after { display: none; }
+  }
+</style>
 </head>
 <body>
-  <h1>404</h1>
-  <p>That page doesn't exist.</p>
-  <a href="/">Back to Octa Devs</a>
+
+  <div class="aura aura-1" aria-hidden="true"></div>
+  <div class="aura aura-2" aria-hidden="true"></div>
+  <div class="grid" aria-hidden="true"></div>
+
+  <main class="stage">
+    <!-- Two counter-rotating octagons: the "Octa" mark, eight sides each. -->
+    <div class="rings" aria-hidden="true">
+      <svg viewBox="0 0 100 100" fill="none" stroke-linejoin="round">
+        <polygon class="ring-outer" stroke-width="0.4"
+          points="69.13,3.81 96.19,30.87 96.19,69.13 69.13,96.19 30.87,96.19 3.81,69.13 3.81,30.87 30.87,3.81"/>
+        <polygon class="ring-inner" stroke-width="0.3"
+          points="63.32,17.84 82.16,36.68 82.16,63.32 63.32,82.16 36.68,82.16 17.84,63.32 17.84,36.68 36.68,17.84"/>
+        <polygon class="ring-dash" stroke-width="0.9" stroke-linecap="round"
+          points="69.13,3.81 96.19,30.87 96.19,69.13 69.13,96.19 30.87,96.19 3.81,69.13 3.81,30.87 30.87,3.81"/>
+      </svg>
+    </div>
+
+    <div class="row" style="--d:80ms">
+      <span class="badge"><span class="beacon"></span> Error · 404</span>
+    </div>
+
+    <div class="row" style="--d:180ms">
+      <div class="code">404<span class="scan"></span></div>
+    </div>
+
+    <div class="row" style="--d:300ms">
+      <h1>This page went off the map.</h1>
+    </div>
+
+    <p class="row lede" style="--d:380ms">
+      The link may be broken, or the page may have moved. Everything we've
+      shipped is still one tap away.
+    </p>
+
+    <div class="row actions" style="--d:470ms">
+      <a class="btn btn-primary" href="/">
+        Back to home <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="btn btn-ghost" href="/work.html">
+        See our work <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <p class="row note" style="--d:560ms">
+      Octa Devs · <a href="mailto:hello@octadevs.fun">hello@octadevs.fun</a>
+    </p>
+  </main>
+
+<script>
+(function () {
+  'use strict';
+
+  var reduced = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function reveal() { document.body.classList.add('ready'); }
+
+  // Next-frame start so the initial state paints first and the transition
+  // actually runs. rAF is frozen while a tab is hidden, so a timer backs it
+  // up — otherwise the page can sit invisible until it is focused.
+  requestAnimationFrame(function () { requestAnimationFrame(reveal); });
+  setTimeout(reveal, 300);
+
+  if (reduced) return;
+
+  // ---- drifting dust -------------------------------------------------
+  var COUNT = window.innerWidth < 600 ? 10 : 18;
+  var frag = document.createDocumentFragment();
+
+  for (var i = 0; i < COUNT; i++) {
+    var d = document.createElement('span');
+    var size = 1.5 + Math.random() * 2.5;
+    d.className = 'dust';
+    d.style.left = (Math.random() * 100) + 'vw';
+    d.style.top = (100 + Math.random() * 18) + 'vh';
+    d.style.width = d.style.height = size.toFixed(1) + 'px';
+    d.style.setProperty('--dx', (Math.random() * 90 - 45).toFixed(0) + 'px');
+    d.style.animationDuration = (13 + Math.random() * 15).toFixed(1) + 's';
+    d.style.animationDelay = (-Math.random() * 20).toFixed(1) + 's';
+    if (Math.random() > 0.62) d.style.background = 'var(--accent-2)';
+    frag.appendChild(d);
+  }
+  document.body.appendChild(frag);
+
+  // ---- pointer parallax on the rings ---------------------------------
+  // Fine pointers only: on touch there is no hover state to track.
+  if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return;
+
+  var rings = document.querySelector('.rings');
+  if (!rings) return;
+
+  var targetX = 0, targetY = 0, curX = 0, curY = 0, raf = null;
+
+  window.addEventListener('pointermove', function (e) {
+    targetX = ((e.clientX / window.innerWidth) - 0.5) * 34;
+    targetY = ((e.clientY / window.innerHeight) - 0.5) * 34;
+    if (!raf) raf = requestAnimationFrame(tick);
+  }, { passive: true });
+
+  // Ease toward the pointer so the rings lag slightly behind it.
+  function tick() {
+    curX += (targetX - curX) * 0.08;
+    curY += (targetY - curY) * 0.08;
+    rings.style.setProperty('--px', curX.toFixed(2) + 'px');
+    rings.style.setProperty('--py', curY.toFixed(2) + 'px');
+
+    if (Math.abs(targetX - curX) > 0.1 || Math.abs(targetY - curY) > 0.1) {
+      raf = requestAnimationFrame(tick);
+    } else {
+      raf = null;
+    }
+  }
+})();
+</script>
 </body>
 </html>
